@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Manual | The American Paranormal</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-dark: #050505;
+    --panel-bg: rgba(20, 20, 25, 0.6);
+    --border: rgba(255, 255, 255, 0.15);
+    --text-main: #e0e0e0;
+    --text-muted: #888;
+    --accent: #7C5CFF;  
+    --cyan: #00D4FF;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    margin: 0;
+    line-height: 1.6;
+    background-image: radial-gradient(circle at 50% 0%, rgba(124, 92, 255, 0.1), transparent 60%);
+    padding-bottom: 60px;
+  }
+
+  /* --- HEADER --- */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    margin: 0 0 10px 0;
+    color: #fff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(124, 92, 255, 0.4);
+  }
+
+  .sub {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+
+  /* --- LAYOUT --- */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  section {
+    margin-bottom: 60px;
+    padding-left: 20px;
+    border-left: 2px solid var(--border);
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    color: #fff;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  h2 .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+
+  h3 {
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 30px;
+    font-size: 1rem;
+  }
+
+  p, li {
+    font-size: 1rem;
+    color: #ccc;
+    max-width: 800px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+  }
+  
+  li::before {
+    content: ">>";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-family: 'Share Tech Mono';
+  }
+
+  /* --- FAQ ACCORDION --- */
+  details {
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: 0.3s;
+  }
+  
+  details:hover {
+    border-color: var(--accent);
+  }
+
+  details[open] {
+    background: rgba(124, 92, 255, 0.05);
+    border-color: var(--accent);
+  }
+
+  summary {
+    padding: 15px;
+    cursor: pointer;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  summary::after {
+    content: "+";
+    font-size: 1.2rem;
+    color: var(--text-muted);
+  }
+
+  details[open] summary::after {
+    content: "-";
+    color: #fff;
+  }
+
+  .answer {
+    padding: 0 15px 15px 15px;
+    font-size: 0.95rem;
+    color: #bbb;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  /* --- NAVIGATION BUTTON --- */
+  .nav-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #000;
+    border: 1px solid var(--accent);
+    color: #fff;
+    padding: 15px 30px;
+    text-decoration: none;
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 4px;
+    transition: 0.3s;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+  
+  .nav-btn:hover {
+    background: var(--accent);
+    box-shadow: 0 0 30px rgba(124, 92, 255, 0.4);
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Field Manual</h1>
+  <div class="sub">Operating Procedures & Technical Documentation</div>
+</header>
+
+<div class="container">
+
+  <section id="ultimate">
+    <h2>ULTIMATE v3.3 <span class="tag">ANOMALY LAB</span></h2>
+    <p>The flagship instrument of the suite. It combines robust multivariate statistical analysis with conformal prediction models to detect environmental anomalies that deviate from a baseline.</p>
+    
+    <h3>Standard Operating Procedure</h3>
+    <ul>
+      <li><strong>Calibration:</strong> Upon loading, click "CALIBRATE" and remain silent for 10 seconds. The system learns the "Room Tone" (background noise floor) to create a mathematical model of "Normal."</li>
+      <li><strong>Monitoring:</strong> Watch the <strong>m² (Mahalanobis Distance)</strong>. A score under 2.0 is normal. Sudden spikes > 10.0 indicate a statistical anomaly.</li>
+      <li><strong>P-Value:</strong> This measures rarity. If the P-value drops below 0.01 (1%), the system will flag a "CONFIRMED ANOMALY."</li>
+    </ul>
+  </section>
+
+  <section id="max">
+    <h2>MAX v2.6 <span class="tag">SPECTRUM ANALYZER</span></h2>
+    <p>A precision audio visualizer using Fast Fourier Transform (FFT) to break sound into individual frequencies.</p>
+    
+    <h3>Interpretation Guide</h3>
+    <ul>
+      <li><strong>Spectrogram (Top):</strong> Shows live frequency strength. Look for spikes in the "Ultrasonic" (right side) or "Infrasound" (left side) ranges that coincide with questions.</li>
+      <li><strong>Waterfall (Bottom):</strong> A history log of sound. Voice phenomena often appear here as distinct, organic shapes contrasting against the static mechanical noise of the room.</li>
+    </ul>
+  </section>
+
+  <section id="vox">
+    <h2>VOX v1.0 <span class="tag">DIGITAL MEDIUM</span></h2>
+    <p>An entropy-based dictionary tool. It monitors the microphone for fluctuations in sound pressure and chaos.</p>
+    
+    <h3>Theory of Operation</h3>
+    <p>When the environmental entropy exceeds a specific threshold (Standard Deviation > 15), the system acts as a random number generator to select a word from an internal database. The theory is that entities can manipulate entropy to "stop" the wheel on a specific word.</p>
+  </section>
+
+  <section id="visus">
+    <h2>VISUS v1.0 <span class="tag">OPTICAL SCRYING</span></h2>
+    <p>A generative fluid dynamics engine designed for visual ITC experiments.</p>
+    
+    <h3>Protocol</h3>
+    <ul>
+      <li>Darken the room completely.</li>
+      <li>Set screen brightness to 20%.</li>
+      <li>Interract with the particle fog using your mouse/finger to "charge" the ether.</li>
+      <li>Stop moving and stare at the center. Allow your eyes to de-focus (soft gaze).</li>
+      <li>Look for faces or shapes forming in the settling digital smoke.</li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <h2>TROUBLESHOOTING & FAQ</h2>
+    
+    <details>
+      <summary>System says "Secure Context Required"</summary>
+      <div class="answer">
+        Modern browsers block microphone access on insecure websites. You must access this portal via <strong>HTTPS</strong> (Github Pages) or <strong>localhost</strong>. Do not open the HTML files directly from your hard drive (file://).
+      </div>
+    </details>
+
+    <details>
+      <summary>I don't hear any sound.</summary>
+      <div class="answer">
+        By default, audio monitoring is <strong>OFF</strong> to prevent feedback loops. If you want to hear what the microphone hears, wear headphones, then check the "Monitor Audio" box in the settings panel.
+      </div>
+    </details>
+
+    <details>
+      <summary>What is a "Good" Anomaly Score?</summary>
+      <div class="answer">
+        In <strong>ULTIMATE</strong>, a Mahalanobis score (m²) of 2-5 is standard background noise. A score of 20+ is significant. A score of 100+ is extreme and warrants immediate investigation.
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I run this on mobile?</summary>
+      <div class="answer">
+        Yes. All apps are optimized for mobile processors. However, ensure your phone is not in "Silent Mode" if you wish to hear the VOX speech synthesis.
+      </div>
+    </details>
+  </section>
+
+</div>
+
+<a href="index.html" class="nav-btn">Return to Portal</a>
+
+</body>
+</html>
