@@ -1,13 +1,15 @@
+<div align="center">
+
+<img src="logo.png" width="150" height="auto" style="border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
 # The American Paranormal
 ### Advanced ITC Anomaly Lab
+**v3.3 Ultimate (Psi+Science) | v2.6 MAX (Statistical Rigor)**
 
-Welcome to the central hub for the ITC Anomaly Lab software suite. These tools utilize AudioWorklet technology and advanced statistical modeling to detect audio anomalies in real-time.
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-cyan.svg)](https://github.com/skdietrich/The-American-Paranormal)
 
----
-
-## 🚀 Launch the Apps
-
-### 🔮 [**v3.3 Ultimate (The Hybrid)**](https://skdietrich.github.io/The-American-Paranormal/ultimate.html)
+</div>
 > **All-in-One System.** The flagship app. Combines Robust Statistics with Psi-theories. Features the **Schumann Resonator** and **Inverse Entropy** listener alongside rigorous math.
 > * **Best for:** The complete experience.
 
