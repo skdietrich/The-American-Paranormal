@@ -1,602 +1,2423 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ITC Anomaly Lab — v3.3 Ultimate</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULTIMATE v3.3 | ITC Anomaly Lab</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#070A12;
-    --panel:#0C1324;
-    --text:#E6ECFF;
-    --muted:#9AA6D6;
-    --accent:#7C5CFF;
-    --bad:#FF4D6D; /* Red: High Energy */
-    --good:#2EE6A6; /* Green: Normal */
-    --order:#00D4FF; /* Cyan: Low Entropy/Order */
-    --warn:#FFCF5C;
-    --shadow: 0 18px 40px rgba(0,0,0,.45);
-    --radius:16px;
+  :root {
+    --bg-dark: #050505;
+    --panel-bg: rgba(12, 19, 36, 0.85);
+    --border: rgba(255, 255, 255, 0.1);
+    --text-main: #e0e0e0;
+    --text-muted: #888;
+    
+    /* BRAND COLORS */
+    --accent: #7C5CFF;  /* Purple */
+    --cyan: #00D4FF;    /* Cyan */
+    --warn: #FFCF5C;    /* Warning */
+    --bad: #FF4D6D;     /* Anomaly/Bad */
+    --good: #00D4FF;    /* Good */
   }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-    background: radial-gradient(1200px 800px at 20% 10%, rgba(124,92,255,.22), transparent 60%),
-                radial-gradient(900px 600px at 80% 20%, rgba(0,212,255,.15), transparent 55%),
-                var(--bg);
-    color:var(--text);
-  }
-  header{ padding:18px; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-  .brand{ display:flex; gap:12px; align-items:center; }
-  .logo{
-    width:42px;height:42px;border-radius:14px;
-    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(0,212,255,.85));
-    box-shadow: 0 14px 30px rgba(124,92,255,.18);
-  }
-  h1{margin:0;font-size:16px;letter-spacing:.3px}
-  .sub{margin:2px 0 0 0;color:var(--muted);font-size:12px}
-  .topbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  
-  button{
-    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65));
-    color:white; border:0; padding:10px 12px; border-radius:12px;
-    box-shadow: 0 10px 20px rgba(124,92,255,.20); cursor:pointer;
-    font: inherit; transition: transform .05s ease, filter .2s ease;
-  }
-  button:active{transform: translateY(1px)}
-  button.secondary{ background: rgba(255,255,255,.06); box-shadow:none; border:1px solid rgba(255,255,255,.10); }
-  button:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.6)}
-  
-  main{ padding: 10px 18px 40px 18px; display:grid; grid-template-columns: 360px 1fr; gap:14px; }
-  @media (max-width: 1040px){ main{grid-template-columns: 1fr} }
-  
-  .card{
-    background: linear-gradient(180deg, rgba(12,19,36,.86), rgba(9,14,28,.86));
-    border:1px solid rgba(255,255,255,.09); border-radius: var(--radius);
-    box-shadow: var(--shadow); overflow:hidden; margin-bottom: 14px;
-  }
-  .card h2{
-    margin:0; font-size:13px; padding:12px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .card .content{padding:12px}
-  
-  .kpiRow{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
-  .kpi{ background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; }
-  .kpi .v{font-size:18px;margin-top:4px}
-  .kpi .t{font-size:11px;color:var(--muted)}
-  
-  .pill{ padding:3px 8px; border-radius:999px; font-size:11px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--muted); }
-  .pill.good{ color: var(--good); border-color: rgba(46,230,166,.3); background: rgba(46,230,166,.1); }
-  .pill.bad{ color: var(--bad); border-color: rgba(255,77,109,.3); background: rgba(255,77,109,.1); }
-  .pill.warn{ color: var(--warn); border-color: rgba(255,207,92,.3); background: rgba(255,207,92,.1); }
-  .pill.order{ color: var(--order); border-color: rgba(0,212,255,.3); background: rgba(0,212,255,.1); font-weight:bold; text-shadow: 0 0 10px rgba(0,212,255,.4); }
 
-  .control{ background: rgba(0,0,0,.14); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; margin-bottom: 10px; }
-  .control.psi { border:1px solid rgba(0,212,255,.2); background:rgba(0,212,255,.04); }
-  
-  .toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius: 12px; background: rgba(255,255,255,.03); margin-bottom: 6px;}
-  .slider{ display:grid; grid-template-columns: 1fr 100px; gap:10px; align-items:center; margin-bottom: 8px; }
-  input, select{ width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:white; padding:8px; border-radius:8px; }
+  * { box-sizing: border-box; }
 
-  canvas{ width:100%; display:block; background: #000; border-top:1px solid rgba(255,255,255,.08); }
-  .bigCanvas{height: 240px}
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(124, 92, 255, 0.1), transparent 70%),
+      radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.05), transparent 50%);
+  }
 
-  .preset-btn{ text-align: left; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-  .preset-btn:hover{ filter: brightness(1.2); }
-  .preset-btn.active{ background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65)); border-color: rgba(124,92,255,.8); }
+  /* --- HEADER --- */
+  header {
+    width: 100%;
+    max-width: 1400px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .brand h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(124, 92, 255, 0.5);
+  }
   
-  .log{ max-height: 180px; overflow-y:auto; font-family: monospace; font-size:11px; padding:10px; color: var(--muted); }
-  .log .item{ border-bottom:1px dashed rgba(255,255,255,.05); padding:4px 0; }
+  .brand .sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    margin-top: 5px;
+    text-transform: uppercase;
+  }
+
+  /* --- CONTROLS --- */
+  button {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+  }
+
+  button:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(124, 92, 255, 0.2);
+  }
+
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Pill Badges */
+  .pill {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .pill.good { color: var(--cyan); border-color: rgba(0, 212, 255, 0.3); }
+  .pill.warn { color: var(--warn); border-color: rgba(255, 207, 92, 0.3); }
+  .pill.bad { color: var(--bad); border-color: rgba(255, 77, 109, 0.3); background: rgba(255, 77, 109, 0.1); }
+
+  /* --- LAYOUT --- */
+  main {
+    width: 100%;
+    max-width: 1400px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    margin-bottom: 20px;
+  }
+
+  .panel-head {
+    background: rgba(255,255,255,0.03);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+
+  .panel-body { padding: 15px; }
+
+  /* --- INPUTS --- */
+  .control-row {
+    margin-bottom: 12px;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+    padding-bottom: 12px;
+  }
+  .label { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 6px; }
   
-  .warnBox{ background: rgba(255,207,92,.1); color: var(--warn); padding:10px; border-radius:8px; font-size:12px; margin-bottom:10px; display:none; }
+  select, input[type="number"], textarea {
+    background: #000; border: 1px solid var(--border);
+    color: var(--cyan); padding: 6px; border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace;
+    width: 100%; font-size: 0.8rem;
+  }
   
-  @keyframes pulse { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
-  .active-effect { color: var(--order); animation: pulse 2s infinite; font-weight:bold; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+  
+  input[type="checkbox"] { accent-color: var(--cyan); }
+
+  /* --- PRESETS GRID --- */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .preset-btn { 
+    text-align: left; padding: 10px; height: 100%; 
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .preset-btn.active { 
+    background: rgba(124, 92, 255, 0.15); 
+    border-color: var(--cyan); 
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+  }
+  .p-title { color: #fff; font-size: 0.8rem; font-weight: bold; }
+  .p-desc { color: var(--text-muted); font-size: 0.6rem; margin-top: 2px; }
+
+  /* --- CANVAS & METERS --- */
+  canvas {
+    width: 100%; display: block;
+    background: #000;
+    border: 1px solid var(--border);
+  }
+  .bigCanvas { height: 200px; }
+  
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;
+  }
+  .kpi {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    padding: 10px; text-align: center; border-radius: 4px;
+  }
+  .kpi .v { font-family: 'Share Tech Mono'; font-size: 1.2rem; color: var(--cyan); margin: 4px 0; }
+  .kpi .t { font-size: 0.6rem; color: #888; }
+  .kpi .s { font-size: 0.55rem; color: #555; }
+
+  /* --- LOGS --- */
+  .log-console {
+    height: 150px; overflow-y: auto;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+    background: #000; border: 1px solid var(--border); padding: 10px;
+    color: #666;
+  }
+  .item { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; }
+  .item .pill { display: inline-block; transform: scale(0.8); margin-right: 5px; }
+
+  /* --- DETAILS/FAQ --- */
+  details { background: rgba(255,255,255,0.02); margin-bottom: 5px; padding: 8px; border-radius: 4px; }
+  summary { cursor: pointer; font-size: 0.8rem; color: var(--text-main); font-weight: bold; }
+  details p { font-size: 0.75rem; color: #aaa; margin: 5px 0 0 10px; line-height: 1.4; }
+
+  .warnBox, .badBox, .goodBox {
+    padding: 10px; font-size: 0.75rem; border-radius: 4px; margin-bottom: 10px; display: none;
+  }
+  .warnBox { border: 1px solid var(--warn); color: var(--warn); background: rgba(255,207,92,0.1); }
+  .badBox { border: 1px solid var(--bad); color: var(--bad); background: rgba(255,77,109,0.1); }
+  .goodBox { border: 1px solid var(--good); color: var(--good); background: rgba(0,212,255,0.1); }
+
 </style>
 </head>
 <body>
+
 <header>
   <div class="brand">
-    <div class="logo"></div>
-    <div>
-      <h1>ITC Anomaly Lab</h1>
-      <div class="sub">v3.3 Ultimate • Conformal + Robust + Psi Modules</div>
-    </div>
+    <h1>ULTIMATE v3.3</h1>
+    <div class="sub">ROBUST MULTIVARIATE ANOMALY LAB</div>
   </div>
-  <div class="topbar">
-    <button id="btnStart">Start System</button>
-    <button id="btnStop" class="secondary" disabled>Stop</button>
-    <button id="btnCal" class="secondary" disabled>Calibrate (10s)</button>
-    <span id="pillCtx" class="pill">Context: unknown</span>
-    <span id="pillRun" class="pill">Idle</span>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content: flex-end;">
+    <button id="btnStart" style="border-color:var(--cyan); color:var(--cyan);">ENGAGE SYSTEM</button>
+    <button id="btnStop" disabled>STOP</button>
+    <button id="btnCal" disabled>CALIBRATE (10s)</button>
+    <button id="btnSelf">SELF-TEST</button>
+    <span id="pillCtx" class="pill">CTX: ---</span>
+    <span id="pillRun" class="pill">IDLE</span>
   </div>
 </header>
 
 <main>
-  <section>
+  <div>
     
-    <div class="card">
-      <h2>⚡ Quick Presets</h2>
-      <div class="content">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-          <button id="btnPresetScientific" class="preset-btn secondary active" data-preset="scientific">
-            <b>🔬 Scientific</b><div style="font-size:10px;opacity:.7">Standard Detection</div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>CONFIGURATION PRESETS</span>
+        <span id="pillEngine" class="pill">ENG: ---</span>
+      </div>
+      <div class="panel-body">
+        <div class="preset-grid">
+          <button id="btnPresetBalanced" class="preset-btn active" data-preset="balanced">
+            <div class="p-title">BALANCED</div><div class="p-desc">General Purpose</div>
           </button>
-          <button id="btnPresetPsi" class="preset-btn secondary" data-preset="psi">
-            <b>🔮 Psi Mode</b><div style="font-size:10px;opacity:.7">Schumann + Entropy</div>
+          <button id="btnPresetSensitive" class="preset-btn" data-preset="sensitive">
+            <div class="p-title">SENSITIVE</div><div class="p-desc">High Gain / Subtle</div>
           </button>
-          <button id="btnPresetHybrid" class="preset-btn secondary" data-preset="hybrid">
-            <b>💠 Hybrid</b><div style="font-size:10px;opacity:.7">Everything On</div>
+          <button id="btnPresetConservative" class="preset-btn" data-preset="conservative">
+            <div class="p-title">CONSERVATIVE</div><div class="p-desc">Low False Positives</div>
           </button>
-          <button id="btnPresetEVP" class="preset-btn secondary" data-preset="evp">
-            <b>👻 EVP</b><div style="font-size:10px;opacity:.7">Voice Focused</div>
+          <button id="btnPresetPerformance" class="preset-btn" data-preset="performance">
+            <div class="p-title">PERFORMANCE</div><div class="p-desc">Low CPU Usage</div>
+          </button>
+          <button id="btnPresetQuality" class="preset-btn" data-preset="quality">
+            <div class="p-title">MAX QUALITY</div><div class="p-desc">All Features On</div>
+          </button>
+          <button id="btnPresetEVP" class="preset-btn" data-preset="evp">
+            <div class="p-title">EVP MODE</div><div class="p-desc">Voice Optimized</div>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <h2><span>Controls</span> <span class="pill" id="pillEngine">Engine: —</span></h2>
-      <div class="content">
-        <div id="ctxWarn" class="warnBox"><b>Mic blocked?</b> Use localhost or HTTPS.</div>
-
-        <div class="control psi">
-          <div style="font-size:12px; font-weight:700; color:var(--order); margin-bottom:8px; display:flex; justify-content:space-between;">
-             <span>PSI MODULES</span>
-             <span id="schumannStatus" style="font-weight:400; opacity:0">ACTIVE</span>
-          </div>
-          
-          <div class="toggle">
-            <div><b style="font-size:12px; color:#fff">Schumann (7.83Hz)</b><div style="font-size:10px;color:var(--muted)">Isochronic Carrier</div></div>
-            <input id="tSchumann" type="checkbox" style="width:auto">
-          </div>
-          <div class="toggle">
-            <div><b style="font-size:12px; color:#fff">Inverse Entropy</b><div style="font-size:10px;color:var(--muted)">Detects Order/Structure</div></div>
-            <input id="tEntropy" type="checkbox" style="width:auto">
-          </div>
+    <div class="panel">
+      <div class="panel-head">AUDIO INPUT</div>
+      <div class="panel-body">
+        <div id="ctxWarn" class="warnBox">
+          ⚠ INSECURE CONTEXT. MIC BLOCKED. USE LOCALHOST.
         </div>
         
-        <div class="control">
-           <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:8px;">MATH MODULES</div>
-          <div class="toggle">
-            <div><b style="font-size:12px">Robust Scoring</b><div style="font-size:10px;color:var(--muted)">Mahalanobis m²</div></div>
-            <input id="tRobust" type="checkbox" checked style="width:auto">
-          </div>
-          <div class="toggle">
-            <div><b style="font-size:12px">Conformal p-values</b><div style="font-size:10px;color:var(--muted)">Rigorous Rarity</div></div>
-            <input id="tConformal" type="checkbox" checked style="width:auto">
-          </div>
-          <div class="toggle">
-             <div><b style="font-size:12px">Evidence</b><div style="font-size:10px;color:var(--muted)">Sequential Martingale</div></div>
-             <input id="tMartingale" type="checkbox" checked style="width:auto">
+        <div class="control-row">
+          <span class="label">INPUT DEVICE</span>
+          <div style="display:flex; gap:5px;">
+            <select id="selDevice"></select>
+            <button id="btnRefreshDevs" class="mini">↻</button>
           </div>
         </div>
 
-        <div class="control">
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-            <input type="checkbox" id="chkMonitor" style="width:auto"> <span>Monitor Audio</span>
-          </div>
-          <div class="slider">
-            <span style="font-size:12px;color:var(--muted)">Gain</span>
-            <input id="rngMonitor" type="range" min="0" max="1" step="0.01" value="0"/>
+        <div class="control-row">
+          <span class="label">MONITOR (HEADPHONES REQUIRED)</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="chkMonitor"> <span>ENABLE</span>
+            <input type="range" id="rngMonitor" min="0" max="1" step="0.01" value="0">
+            <span id="labMonitor" style="font-family:'Share Tech Mono'; font-size:0.8rem;">0.00</span>
           </div>
         </div>
 
-        <div class="control">
-          <div class="slider">
-            <div style="font-size:12px">Sensitivity (Alpha)</div>
-            <input id="alpha" type="range" min="0.0005" max="0.05" step="0.0005" value="0.01"/>
+        <div class="control-row">
+          <span class="label">DSP FILTERS</span>
+          <div style="display:flex; gap:15px; font-size:0.75rem;">
+            <label><input type="checkbox" id="chkAEC"> ECHO</label>
+            <label><input type="checkbox" id="chkNS"> NOISE</label>
+            <label><input type="checkbox" id="chkAGC"> GAIN</label>
           </div>
-        </div>
-        
-        <div style="display:none">
-            <input id="win" value="240"><input id="cwin" value="300">
         </div>
       </div>
     </div>
-  </section>
 
-  <section>
-    <div class="card">
-      <h2><span>Visuals</span> <span class="pill" id="pillFPS">FPS: —</span></h2>
-      <canvas id="cWave" class="bigCanvas" width="1000" height="240"></canvas>
-      <canvas id="cSpec" width="1000" height="150" style="height:150px"></canvas>
+    <div class="panel">
+      <div class="panel-head">ALGORITHM PARAMETERS</div>
+      <div class="panel-body">
+        <div class="control-row">
+          <span class="label">ACTIVE MODALITIES</span>
+          <div style="display:grid; gap:5px; font-size:0.75rem;">
+            <label><input type="checkbox" id="tRobust" checked> Robust Scoring</label>
+            <label><input type="checkbox" id="tConformal" checked> Conformal P-Values</label>
+            <label><input type="checkbox" id="tMartingale" checked> Sequential Evidence</label>
+            <label><input type="checkbox" id="tBOCD" checked> Regime Shift (BOCD)</label>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <span class="label">FEATURE VECTORS</span>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; font-size:0.75rem;">
+            <label><input type="checkbox" id="fTime" checked> Time Domain</label>
+            <label><input type="checkbox" id="fSpec" checked> Spectral</label>
+            <label><input type="checkbox" id="fMFCC" checked> MFCC (13)</label>
+            <label><input type="checkbox" id="fWave" checked> Wavelet</label>
+            <label><input type="checkbox" id="fCx" checked> Complexity</label>
+          </div>
+        </div>
+
+        <div class="control-row">
+           <span class="label">ANOMALY ALPHA (p &le; val)</span>
+           <div style="display:flex; gap:5px;">
+             <input id="alpha" type="range" min="0.0005" max="0.05" step="0.0005" value="0.01">
+             <input id="alphaN" type="number" step="0.0005" value="0.01" style="width:70px;">
+           </div>
+        </div>
+
+        <div class="control-row">
+           <span class="label">ROBUST CUTOFF (Tukey)</span>
+           <div style="display:flex; gap:5px;">
+             <input id="rcut" type="range" min="2.0" max="6.0" step="0.1" value="4.0">
+             <input id="rcutN" type="number" step="0.1" value="4.0" style="width:70px;">
+           </div>
+        </div>
+
+        <div style="display:none;">
+           <input id="frameMs" value="25"><input id="frameMsN" value="25">
+           <input id="win" value="240"><input id="winN" value="240">
+           <input id="cwin" value="300"><input id="cwinN" value="300">
+           <input type="checkbox" id="tCleanUpdate" checked>
+           <input type="checkbox" id="vWaveform" checked>
+           <input type="checkbox" id="vSpectrum" checked>
+           <input type="checkbox" id="vMeters" checked>
+        </div>
+        
+        <div class="kpi-row" style="margin-top:10px;">
+          <div class="kpi">
+            <div class="t">DIMS</div>
+            <div class="v" id="kDims">0</div>
+          </div>
+          <div class="kpi">
+            <div class="t">BASE WIN</div>
+            <div class="v" id="kWin">0</div>
+          </div>
+          <div class="kpi">
+            <div class="t">CONF WIN</div>
+            <div class="v" id="kCWin">0</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div>
+    
+    <div class="panel">
+      <div class="panel-head">
+        <span>SIGNAL ANALYSIS</span>
+        <div>
+           <span id="pillSR" class="pill">SR: ---</span>
+           <span id="pillFPS" class="pill">FPS: ---</span>
+        </div>
+      </div>
+      <div style="background:#000;">
+        <canvas id="cWave" class="bigCanvas" width="1000" height="200"></canvas>
+        <canvas id="cSpec" width="1000" height="150" style="border-top:none;"></canvas>
+      </div>
     </div>
 
-    <div class="card">
-      <h2><span>Analysis</span> <span class="pill" id="pillAnom">Normal</span></h2>
-      <canvas id="cMeters" width="800" height="420" style="height:420px"></canvas>
+    <div class="panel">
+      <div class="panel-head">
+        <span>ANOMALY DETECTION METRICS</span>
+        <span id="pillAnom" class="pill">NORMAL</span>
+      </div>
+      <div style="position:relative; background:#000;">
+         <canvas id="cMeters" width="800" height="400" style="height:300px;"></canvas>
+         
+         <div class="kpi-row" style="position:absolute; bottom:0; width:100%; padding:0 20px; pointer-events:none;">
+            <div class="kpi" style="background:rgba(0,0,0,0.8);">
+              <div class="t">ROBUST m²</div>
+              <div class="v" id="kM2">---</div>
+              <div class="s" id="kM2s">---</div>
+            </div>
+            <div class="kpi" style="background:rgba(0,0,0,0.8);">
+              <div class="t">P-VALUE</div>
+              <div class="v" id="kP">---</div>
+              <div class="s" id="kPs">---</div>
+            </div>
+            <div class="kpi" style="background:rgba(0,0,0,0.8);">
+              <div class="t">EVIDENCE</div>
+              <div class="v" id="kE">---</div>
+              <div class="s">log10</div>
+            </div>
+         </div>
+      </div>
       
-      <div class="content">
-        <div class="kpiRow">
-          <div class="kpi"><div class="t">m² Score</div><div class="v" id="kM2">—</div></div>
-          <div class="kpi"><div class="t">p-value</div><div class="v" id="kP">—</div></div>
-          <div class="kpi"><div class="t">Evidence</div><div class="v" id="kE">—</div></div>
-        </div>
-        <div class="log" id="log" style="margin-top:10px;"></div>
+      <div class="panel-body">
+        <div id="errBox" class="badBox"></div>
+        <div class="log-console" id="log"></div>
       </div>
     </div>
-  </section>
+
+    <div class="panel">
+      <div class="panel-head">DATA MANAGEMENT</div>
+      <div class="panel-body">
+         <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnExportConfig">EXPORT CFG</button>
+            <button id="btnImportConfig">IMPORT CFG</button>
+            <button id="btnSnapshot" style="border-color:var(--cyan); color:var(--cyan);">SNAPSHOT DATA</button>
+            <button id="btnClearEvents">CLEAR EVENTS</button>
+         </div>
+         <textarea id="configTextArea" style="display:none; margin-top:10px; min-height:80px;"></textarea>
+         <div id="configStatus" class="goodBox"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">FAQ / TROUBLESHOOTING</div>
+      <div class="panel-body" style="max-height:200px; overflow-y:auto;">
+         <details>
+           <summary>Why is the waveform flat?</summary>
+           <p>Ensure you are on localhost or HTTPS. Browsers block mic access on file://. Click START.</p>
+         </details>
+         <details>
+           <summary>How do I calibrate?</summary>
+           <p>Click Calibrate. Stay silent for 10 seconds. This builds the robust baseline model.</p>
+         </details>
+         <details>
+           <summary>What is m²?</summary>
+           <p>Mahalanobis distance. It measures how "strange" the current sound is compared to the calibration.</p>
+         </details>
+      </div>
+    </div>
+
+  </div>
 </main>
 
-<script>
+<a href="index.html" style="position:fixed; bottom:10px; left:10px; color:#555; text-decoration:none; font-size:0.7rem; font-family:'Share Tech Mono';">RETURN TO PORTAL</a>
+<div id="pillHealth" style="display:none;"></div> <script>
 (() => {
   "use strict";
 
-  // --- PRESETS ---
-  const PRESETS = {
-    scientific: { 
-      alpha: 0.01, schumann: false, entropy: false, 
-      robust: true, conformal: true, mart: true 
-    },
-    psi: { 
-      alpha: 0.02, schumann: true, entropy: true, 
-      robust: true, conformal: false, mart: false 
-    },
-    hybrid: { 
-      alpha: 0.01, schumann: true, entropy: true, 
-      robust: true, conformal: true, mart: true 
-    },
-    evp: { 
-      alpha: 0.015, schumann: false, entropy: false, 
-      robust: true, conformal: true, mart: true 
-    }
-  };
-
-  // --- HELPERS ---
+  // ---------- Helpers ----------
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const fmt = (x, d=3) => (Number.isFinite(x) ? x.toFixed(d) : "—");
   const nowMs = () => performance.now();
+
   function isSecureCtx(){
     return (window.isSecureContext === true) || location.hostname === "localhost" || location.hostname === "127.0.0.1";
   }
+
   function setPill(el, text, cls){
+    if(!el) return;
     el.textContent = text;
-    el.classList.remove("good","warn","bad","order");
+    el.classList.remove("good","warn","bad");
     if(cls) el.classList.add(cls);
   }
 
-  // --- DOM ---
+  // ---------- UI bindings ----------
   const $ = (id) => document.getElementById(id);
-  const btnStart=$("btnStart"), btnStop=$("btnStop"), btnCal=$("btnCal");
-  const pillRun=$("pillRun"), pillAnom=$("pillAnom");
-  const logEl=$("log");
-  
-  const chkMonitor=$("chkMonitor"), rngMonitor=$("rngMonitor");
-  // Psi Toggles
-  const tSchumann=$("tSchumann"), tEntropy=$("tEntropy");
-  // Math Toggles
-  const tRobust=$("tRobust"), tConformal=$("tConformal"), tMartingale=$("tMartingale");
-  
-  const alpha=$("alpha");
-  const kM2=$("kM2"), kP=$("kP"), kE=$("kE");
-  const cWave=$("cWave"), cSpec=$("cSpec"), cMeters=$("cMeters");
 
-  // --- LOGGING ---
+  
+const selDevice = document.getElementById("selDevice");
+const btnRefreshDevs = document.getElementById("btnRefreshDevs");
+const chkMonitor = document.getElementById("chkMonitor");
+const rngMonitor = document.getElementById("rngMonitor");
+const labMonitor = document.getElementById("labMonitor");
+const chkAEC = document.getElementById("chkAEC");
+const chkNS  = document.getElementById("chkNS");
+const chkAGC = document.getElementById("chkAGC");
+
+// Defaults: leave these ON for typical users; power users can disable for measurement.
+chkAEC.checked = false;
+chkNS.checked  = false;
+chkAGC.checked = false;
+
+function monitorGainValue(){
+  const v = clamp(parseFloat(rngMonitor.value || "0"), 0, 1);
+  labMonitor.textContent = v.toFixed(2);
+  return v;
+}
+rngMonitor.addEventListener("input", ()=>{
+  const v = monitorGainValue();
+  if(app && app.monitorGain){ app.monitorGain.gain.value = chkMonitor.checked ? v : 0; }
+});
+chkMonitor.addEventListener("change", ()=>{
+  const v = monitorGainValue();
+  if(app && app.monitorGain){ app.monitorGain.gain.value = chkMonitor.checked ? v : 0; }
+});
+
+async function refreshDevices(){
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const inputs = devs.filter(d=>d.kind==="audioinput");
+    const cur = selDevice.value;
+    selDevice.innerHTML = "";
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "Default microphone";
+    selDevice.appendChild(opt0);
+    for(const d of inputs){
+      const o = document.createElement("option");
+      o.value = d.deviceId;
+      o.textContent = d.label || `Microphone ${selDevice.length}`;
+      selDevice.appendChild(o);
+    }
+    // restore if possible
+    if(cur){
+      const found = [...selDevice.options].some(o=>o.value===cur);
+      if(found) selDevice.value = cur;
+    }
+  }catch(e){
+    log("Device enumeration failed (permissions may be required first).", "warn");
+  }
+}
+btnRefreshDevs?.addEventListener("click", refreshDevices);
+const btnStart = $("btnStart"), btnStop = $("btnStop"), btnCal = $("btnCal"), btnSelf = $("btnSelf");
+  const pillCtx = $("pillCtx"), pillRun = $("pillRun"), pillEngine = $("pillEngine"), pillHealth = $("pillHealth");
+  const pillSR = $("pillSR"), pillFPS = $("pillFPS"), pillAnom = $("pillAnom");
+  const ctxWarn = $("ctxWarn"), errBox = $("errBox");
+
+  const tRobust = $("tRobust"), tConformal = $("tConformal"), tMartingale = $("tMartingale"), tBOCD = $("tBOCD"), tCleanUpdate = $("tCleanUpdate");
+  const fTime = $("fTime"), fSpec = $("fSpec"), fMFCC = $("fMFCC"), fWave = $("fWave"), fCx = $("fCx");
+  const alpha = $("alpha"), alphaN = $("alphaN"), rcut = $("rcut"), rcutN = $("rcutN");
+  const frameMs = $("frameMs"), frameMsN = $("frameMsN");
+  const win = $("win"), winN = $("winN");
+  const cwin = $("cwin"), cwinN = $("cwinN");
+  const vWaveform = $("vWaveform"), vSpectrum = $("vSpectrum"), vMeters = $("vMeters");
+
+  const kDims = $("kDims"), kWin = $("kWin"), kCWin = $("kCWin");
+  const kM2 = $("kM2"), kP = $("kP"), kE = $("kE");
+  const kM2s = $("kM2s"), kPs = $("kPs");
+
+  const cWave = $("cWave"), cSpec = $("cSpec"), cMeters = $("cMeters");
+  const logEl = $("log");
+
+  function bindRangePair(r, n){
+    const sync = (fromRange) => {
+      if(fromRange){ n.value = r.value; }
+      else { r.value = n.value; }
+      engine.configDirty = true;
+    };
+    r.addEventListener("input", ()=>sync(true));
+    n.addEventListener("input", ()=>sync(false));
+  }
+  bindRangePair(alpha, alphaN);
+  bindRangePair(rcut, rcutN);
+  
+  // NOTE: These are hidden inputs but logic persists
+  if(frameMs) bindRangePair(frameMs, frameMsN);
+  if(win) bindRangePair(win, winN);
+  if(cwin) bindRangePair(cwin, cwinN);
+
+  [tRobust,tConformal,tMartingale,tBOCD,tCleanUpdate,fTime,fSpec,fMFCC,fWave,fCx,vWaveform,vSpectrum,vMeters].forEach(x=>{
+    if(x) x.addEventListener("change", ()=>engine.configDirty = true);
+  });
+
+  // ---------- Logging ----------
   function log(msg, kind="info"){
+    const ts = new Date().toLocaleTimeString();
     const div = document.createElement("div");
     div.className = "item";
-    const ts = new Date().toLocaleTimeString().split(" ")[0];
-    div.innerHTML = `<span style="opacity:.6">[${ts}]</span> <span class="${kind==='bad'?'pill bad':(kind==='order'?'pill order':(kind==='warn'?'pill warn':''))}">${msg}</span>`;
+    if(kind==="bad") div.classList.add("bad");
+    if(kind==="warn") div.classList.add("warn");
+    if(kind==="good") div.classList.add("good");
+    
+    div.innerHTML = `<span style="opacity:0.5">${ts}</span> ${msg}`;
     logEl.prepend(div);
-    if(logEl.childNodes.length > 50) logEl.removeChild(logEl.lastChild);
+    while(logEl.childNodes.length > 200) logEl.removeChild(logEl.lastChild);
+  }
+  function setErr(msg){
+    if(!msg){
+      errBox.style.display = "none";
+      errBox.textContent = "";
+      return;
+    }
+    errBox.style.display = "block";
+    errBox.textContent = msg;
   }
 
-  // --- MATH ---
-  function mean(arr){ let s=0; for(const x of arr)s+=x; return s/arr.length; }
-  function median(v){ const a=v.slice().sort((x,y)=>x-y); const m=a.length>>1; return (a.length%2)?a[m]:0.5*(a[m-1]+a[m]); }
-  function mad(v, m){ return median(v.map(x=>Math.abs(x-m)))*1.4826; }
-  function dot(a,b){ let s=0; for(let i=0;i<a.length;i++)s+=a[i]*b[i]; return s; }
-  
+  // ---------- Math primitives ----------
+  function mean(arr){
+    let s=0; for(const x of arr) s+=x;
+    return s/Math.max(1,arr.length);
+  }
+  function variance(arr, m){
+    let s=0; for(const x of arr){ const d=x-m; s+=d*d; }
+    return s/Math.max(1,arr.length-1);
+  }
+  function median(values){
+    const a = values.slice().sort((x,y)=>x-y);
+    const n=a.length;
+    if(n===0) return 0;
+    const mid = n>>1;
+    return (n%2) ? a[mid] : 0.5*(a[mid-1]+a[mid]);
+  }
+  function mad(values, med){
+    const dev = values.map(v=>Math.abs(v-med));
+    return median(dev) * 1.4826; // consistent for normal
+  }
+  function dot(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+
+  // Cholesky (for symmetric posdef), returns lower L such that A = L L^T; throws on failure.
   function cholesky(A){
-    const n=A.length, L=Array.from({length:n},()=>Array(n).fill(0));
+    const n = A.length;
+    const L = Array.from({length:n}, ()=>Array(n).fill(0));
     for(let i=0;i<n;i++){
       for(let j=0;j<=i;j++){
-        let s=A[i][j]; for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];
-        if(i===j){ if(s<=1e-12) throw new Error("Non-PD"); L[i][j]=Math.sqrt(s); }
-        else L[i][j]=s/L[j][j];
+        let s = A[i][j];
+        for(let k=0;k<j;k++) s -= L[i][k]*L[j][k];
+        if(i===j){
+          if(s <= 1e-12) throw new Error("Cholesky failed (non-PD).");
+          L[i][j] = Math.sqrt(s);
+        }else{
+          L[i][j] = s / L[j][j];
+        }
       }
     }
     return L;
   }
+  // Solve (L L^T) x = b using Cholesky factors L
   function cholSolve(L, b){
-    const n=L.length, y=Array(n).fill(0), x=Array(n).fill(0);
-    for(let i=0;i<n;i++){ let s=b[i]; for(let k=0;k<i;k++)s-=L[i][k]*y[k]; y[i]=s/L[i][i]; }
-    for(let i=n-1;i>=0;i--){ let s=y[i]; for(let k=i+1;k<n;k++)s-=L[k][i]*x[k]; x[i]=s/L[i][i]; }
+    const n = L.length;
+    const y = Array(n).fill(0);
+    for(let i=0;i<n;i++){
+      let s = b[i];
+      for(let k=0;k<i;k++) s -= L[i][k]*y[k];
+      y[i] = s / L[i][i];
+    }
+    const x = Array(n).fill(0);
+    for(let i=n-1;i>=0;i--){
+      let s = y[i];
+      for(let k=i+1;k<n;k++) s -= L[k][i]*x[k];
+      x[i] = s / L[i][i];
+    }
     return x;
   }
 
-  function robustMeanCov(X){
-    const n=X.length; if(n<5)return null;
-    const p=X[0].length;
-    const med=Array(p), scale=Array(p);
-    for(let j=0;j<p;j++){ const col=X.map(r=>r[j]); med[j]=median(col); scale[j]=mad(col,med[j])||1; }
-    const Z=X.map(r=>r.map((v,j)=>(v-med[j])/scale[j]));
-    
-    let mu=Array(p).fill(0);
+  // Robust mean/cov via iterative reweighting in standardized space
+  function robustMeanCov(X, tukeyC){
+    // X: array of vectors, shape (n,p)
+    const n = X.length;
+    if(n<5) return null;
+    const p = X[0].length;
+    // coordinate-wise median + MAD scaling
+    const med = Array(p).fill(0);
+    const scale = Array(p).fill(1);
+    for(let j=0;j<p;j++){
+      const col = X.map(r=>r[j]);
+      const m = median(col);
+      let s = mad(col,m);
+      if(!Number.isFinite(s) || s<1e-9) s = Math.sqrt(Math.max(1e-12, variance(col,m))) || 1;
+      med[j]=m; scale[j]=s;
+    }
+    // standardized Z
+    const Z = X.map(r=>{
+      const z = Array(p);
+      for(let j=0;j<p;j++) z[j] = (r[j]-med[j]) / scale[j];
+      return z;
+    });
+
+    // init mean 0 and cov from sample
+    let mu = Array(p).fill(0);
     for(const z of Z) for(let j=0;j<p;j++) mu[j]+=z[j];
-    for(let j=0;j<p;j++) mu[j]/=n;
-    
-    let S=Array.from({length:p},()=>Array(p).fill(0));
-    for(const z of Z){ for(let i=0;i<p;i++){ const d=z[i]-mu[i]; for(let j=0;j<=i;j++) S[i][j]+=d*(z[j]-mu[j]); } }
-    for(let i=0;i<p;i++) { for(let j=0;j<=i;j++){ S[i][j]/=(n-1); S[j][i]=S[i][j]; } S[i][i]+=1e-5; }
+    for(let j=0;j<p;j++) mu[j] /= n;
 
-    const lambda = 0.2;
-    for(let i=0;i<p;i++) for(let j=0;j<p;j++) S[i][j] = (1-lambda)*S[i][j] + (i===j?lambda:0);
-    return {med, scale, mu, S};
+    let S = Array.from({length:p}, ()=>Array(p).fill(0));
+    for(const z of Z){
+      for(let i=0;i<p;i++){
+        const di = z[i]-mu[i];
+        for(let j=0;j<=i;j++){
+          S[i][j] += di*(z[j]-mu[j]);
+        }
+      }
+    }
+    for(let i=0;i<p;i++){
+      for(let j=0;j<=i;j++){
+        S[i][j] /= Math.max(1,(n-1));
+        S[j][i] = S[i][j];
+      }
+    }
+
+    // light ridge to ensure PD
+    const ridge = 1e-6;
+    for(let i=0;i<p;i++) S[i][i]+=ridge;
+
+    // iterative reweighting (2 iterations) using Tukey biweight on Mahalanobis distance
+    for(let it=0; it<2; it++){
+      // Cholesky factorization for fast solves
+      let L;
+      try{ L = cholesky(S); }
+      catch(e){
+        // Add stronger ridge and retry once
+        for(let i=0;i<p;i++) S[i][i] += 1e-3;
+        L = cholesky(S);
+      }
+
+      const w = Array(n).fill(0);
+      let wsum = 0;
+
+      for(let i=0;i<n;i++){
+        const z = Z[i];
+        const dz = Array(p);
+        for(let j=0;j<p;j++) dz[j] = z[j]-mu[j];
+        const x = cholSolve(L, dz);     // x = S^{-1} dz
+        const m2 = dot(dz, x);          // dz^T S^{-1} dz
+        const d = Math.sqrt(Math.max(0, m2));
+        const u = d / Math.max(1e-9, tukeyC);
+        let wi = 0;
+        if(u < 1){
+          const t = 1 - u*u;
+          wi = t*t; // Tukey biweight
+        }else{
+          wi = 0;
+        }
+        w[i]=wi;
+        wsum += wi;
+      }
+
+      if(wsum < 1e-6) break; // degenerate; keep previous
+
+      // weighted mean
+      const muNew = Array(p).fill(0);
+      for(let i=0;i<n;i++){
+        const wi = w[i];
+        if(wi===0) continue;
+        const z = Z[i];
+        for(let j=0;j<p;j++) muNew[j] += wi*z[j];
+      }
+      for(let j=0;j<p;j++) muNew[j] /= wsum;
+
+      // weighted covariance
+      const SNew = Array.from({length:p}, ()=>Array(p).fill(0));
+      for(let i=0;i<n;i++){
+        const wi = w[i];
+        if(wi===0) continue;
+        const z = Z[i];
+        for(let a=0;a<p;a++){
+          const da = z[a]-muNew[a];
+          for(let b=0;b<=a;b++){
+            SNew[a][b] += wi * da * (z[b]-muNew[b]);
+          }
+        }
+      }
+      const denom = Math.max(1e-9, wsum - 1);
+      for(let a=0;a<p;a++){
+        for(let b=0;b<=a;b++){
+          SNew[a][b] /= denom;
+          SNew[b][a] = SNew[a][b];
+        }
+      }
+      for(let i=0;i<p;i++) SNew[i][i] += ridge;
+      mu = muNew;
+      S = SNew;
+    }
+
+    // shrinkage (simple) toward identity in standardized space
+    // ensures stable inversion; lambda chosen heuristically based on n/p ratio
+    const pRatio = p / Math.max(1,n);
+    const lambda = clamp(0.15 + 0.65*pRatio, 0.10, 0.85);
+    for(let i=0;i<p;i++){
+      for(let j=0;j<p;j++){
+        const target = (i===j) ? 1 : 0;
+        S[i][j] = (1-lambda)*S[i][j] + lambda*target;
+      }
+    }
+
+    // output model in standardized space
+    return { med, scale, mu, S };
   }
 
-  function mahalanobis(model, x){
+  function mahalanobisM2(model, x){
     const {med, scale, mu, S} = model;
-    const z = x.map((v,j)=>(v-med[j])/scale[j]);
-    const d = z.map((v,j)=>v-mu[j]);
-    let L; try{ L=cholesky(S); }catch(e){ return 0; }
-    return Math.max(0, dot(d, cholSolve(L,d)));
+    const p = mu.length;
+    const z = Array(p);
+    for(let j=0;j<p;j++) z[j] = (x[j]-med[j]) / scale[j];
+    const dz = Array(p);
+    for(let j=0;j<p;j++) dz[j] = z[j]-mu[j];
+
+    let L = null;
+    try{ L = cholesky(S); }
+    catch(e){
+      // last resort ridge
+      const S2 = S.map((row,i)=>row.map((v,j)=> (i===j ? v+1e-2 : v)));
+      L = cholesky(S2);
+    }
+    const y = cholSolve(L, dz);
+    const m2 = dot(dz, y);
+    return Math.max(0, m2);
   }
 
-  // --- ENGINE ---
-  const engine = {
-    running: false, 
-    X: [], scores: [], model: null, 
-    martingale: 0, baselineEntropy: 0,
-    
-    // Nodes
-    audio: null, source: null, analyser: null, gain: null, proc: null,
-    schOsc: null, schLFO: null, schGain: null,
-    
-    get config(){
-        return {
-            alpha: Number(alpha.value),
-            win: 240, cwin: 300,
-            schumann: tSchumann.checked,
-            invEntropy: tEntropy.checked,
-            robust: tRobust.checked,
-            conformal: tConformal.checked,
-            mart: tMartingale.checked
+  // Chi-square CDF via regularized gamma P(k/2, x/2)
+  // We keep this as an OPTIONAL path; conformal is preferred.
+  function logGamma(z){
+    // Lanczos approximation
+    const g = 7;
+    const p = [
+      0.99999999999980993,
+      676.5203681218851,
+      -1259.1392167224028,
+      771.32342877765313,
+      -176.61502916214059,
+      12.507343278686905,
+      -0.13857109526572012,
+      9.9843695780195716e-6,
+      1.5056327351493116e-7
+    ];
+    if(z < 0.5){
+      return Math.log(Math.PI) - Math.log(Math.sin(Math.PI*z)) - logGamma(1-z);
+    }
+    z -= 1;
+    let x = p[0];
+    for(let i=1;i<p.length;i++) x += p[i]/(z+i);
+    const t = z + g + 0.5;
+    return 0.5*Math.log(2*Math.PI) + (z+0.5)*Math.log(t) - t + Math.log(x);
+  }
+
+  function gammaP(s, x){
+    // regularized lower incomplete gamma P(s,x)
+    if(x <= 0) return 0;
+    if(x < s + 1){
+      // series
+      let sum = 1/s;
+      let term = sum;
+      for(let k=1;k<200;k++){
+        term *= x/(s+k);
+        sum += term;
+        if(Math.abs(term) < 1e-12*Math.abs(sum)) break;
+      }
+      return sum * Math.exp(-x + s*Math.log(x) - logGamma(s));
+    }else{
+      // continued fraction for Q, then P = 1-Q
+      let a = 1 - s;
+      let b = a + x + 1;
+      let c = 1/1e-30;
+      let d = 1/b;
+      let h = d;
+      for(let i=1;i<200;i++){
+        const an = i*(s - i);
+        a += 2;
+        b += 2;
+        d = an*d + b;
+        if(Math.abs(d) < 1e-30) d = 1e-30;
+        c = b + an/c;
+        if(Math.abs(c) < 1e-30) c = 1e-30;
+        d = 1/d;
+        const del = d*c;
+        h *= del;
+        if(Math.abs(del - 1) < 1e-12) break;
+      }
+      const Q = h * Math.exp(-x + s*Math.log(x) - logGamma(s));
+      return 1 - Q;
+    }
+  }
+
+  function chi2CDF(x, k){
+    return gammaP(k/2, x/2);
+  }
+
+  // Conformal p-value for nonconformity score s: p = (#{si >= s} + 1)/(n+1)
+  function conformalP(scores, s){
+    const n = scores.length;
+    if(n < 10) return NaN;
+    let ge = 0;
+    for(const v of scores) if(v >= s) ge++;
+    return (ge + 1) / (n + 1);
+  }
+
+  // Power martingale on p-values (Vovk-style); we track log10 for display.
+  function martingaleUpdate(state, p, eps=0.7){
+    if(!Number.isFinite(p) || p<=0) return state;
+    const m = eps*Math.pow(p, eps-1);
+    state.log10 += Math.log10(Math.max(1e-30, m));
+    return state;
+  }
+
+  // ---------- BOCD (lightweight) ----------
+  // Student-t predictive for Normal with unknown mean/var (NIG prior)
+  function bocdInit(){
+    return {
+      R: [1.0], // run length distribution
+      mu: [0.0],
+      kappa: [1e-3],
+      alpha: [1e-3],
+      beta: [1e-3],
+      hazard: 1/180, // expected segment length ~180 frames (~4.5s at 25ms)
+      maxR: 300
+    };
+  }
+  function studentTPdf(x, mu, kappa, alpha, beta){
+    // predictive is Student-t with df=2alpha, location=mu, scale=sqrt(beta*(kappa+1)/(alpha*kappa))
+    const df = 2*alpha;
+    const scale2 = beta*(kappa+1)/(alpha*kappa);
+    const z = (x-mu)/Math.sqrt(scale2);
+    // log pdf
+    const lg = logGamma((df+1)/2) - logGamma(df/2) - 0.5*(Math.log(df*Math.PI) + Math.log(scale2));
+    const lp = lg - ((df+1)/2)*Math.log(1 + (z*z)/df);
+    return Math.exp(lp);
+  }
+  function bocdUpdate(st, x){
+    if(!Number.isFinite(x)) return {st, cp:0};
+    const H = st.hazard;
+    const R = st.R;
+    const m = st.mu, k = st.kappa, a = st.alpha, b = st.beta;
+
+    const maxR = st.maxR;
+    const newR = Array(Math.min(R.length+1, maxR)).fill(0);
+    const newMu = Array(newR.length).fill(0);
+    const newK = Array(newR.length).fill(0);
+    const newA = Array(newR.length).fill(0);
+    const newB = Array(newR.length).fill(0);
+
+    // predictive probs for each run length
+    const pred = [];
+    for(let r=0;r<R.length;r++){
+      pred[r] = studentTPdf(x, m[r], k[r], a[r], b[r]) + 1e-30;
+    }
+
+    // growth probabilities
+    for(let r=0;r<newR.length-1;r++){
+      const pr = R[r]*pred[r]*(1-H);
+      newR[r+1] += pr;
+      // update posterior params for run length r+1
+      const mu0 = m[r], k0 = k[r], a0 = a[r], b0 = b[r];
+      const k1 = k0 + 1;
+      const mu1 = (k0*mu0 + x)/k1;
+      const a1 = a0 + 0.5;
+      const b1 = b0 + 0.5*(k0*(x-mu0)*(x-mu0))/k1;
+      newMu[r+1]=mu1; newK[r+1]=k1; newA[r+1]=a1; newB[r+1]=b1;
+    }
+
+    // changepoint probability mass to r=0
+    let cpMass = 0;
+    for(let r=0;r<R.length;r++){
+      cpMass += R[r]*pred[r]*H;
+    }
+    newR[0] = cpMass;
+
+    // reset prior for r=0
+    newMu[0]=0; newK[0]=1e-3; newA[0]=1e-3; newB[0]=1e-3;
+
+    // normalize
+    const s = newR.reduce((a,b)=>a+b,0) + 1e-30;
+    for(let i=0;i<newR.length;i++) newR[i] /= s;
+
+    // prune
+    const keep = [];
+    for(let i=0;i<newR.length;i++){
+      if(newR[i] > 1e-6) keep.push(i);
+    }
+    // maintain order, but cap size
+    const cap = Math.min(maxR, keep.length);
+    const RR = [], MM=[], KK=[], AA=[], BB=[];
+    for(let ii=0; ii<cap; ii++){
+      const i = keep[ii];
+      RR.push(newR[i]); MM.push(newMu[i]); KK.push(newK[i]); AA.push(newA[i]); BB.push(newB[i]);
+    }
+
+    // approximate changepoint probability is mass at run length 0
+    const cp = newR[0];
+    return { st: { ...st, R: RR, mu: MM, kappa: KK, alpha: AA, beta: BB }, cp };
+  }
+
+  // ---------- Audio capture ----------
+  const workletCode = `
+    class FramePacker extends AudioWorkletProcessor {
+      constructor(){
+        super();
+        this.buf = new Float32Array(0);
+        this.enabled = true;
+        this.port.onmessage = (e)=>{
+          if(e.data && e.data.type==="enable"){ this.enabled = !!e.data.value; }
         };
-    },
-    
-    async start(){
-        try {
-            if(!isSecureCtx()) throw new Error("Insecure context. Use localhost or https.");
-            this.audio = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
-            await this.audio.resume();
-            
-            const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, autoGainControl:false, noiseSuppression:false}});
-            this.source = this.audio.createMediaStreamSource(stream);
-            
-            this.analyser = this.audio.createAnalyser();
-            this.analyser.fftSize = 2048;
-            this.analyser.smoothingTimeConstant = 0.2;
-            
-            this.gain = this.audio.createGain();
-            this.gain.gain.value = chkMonitor.checked ? Number(rngMonitor.value) : 0;
-            this.source.connect(this.gain).connect(this.audio.destination);
-            
-            this.proc = this.audio.createScriptProcessor(2048, 1, 1);
-            this.proc.onaudioprocess = (e) => this.onAudio(e.inputBuffer.getChannelData(0));
-            this.source.connect(this.proc);
-            this.proc.connect(this.audio.createGain()).connect(this.audio.destination);
-            this.source.connect(this.analyser);
-            
-            this.running = true;
-            this.X=[]; this.scores=[]; this.model=null; this.martingale=0;
-            
-            if(this.config.schumann) this.toggleSchumann(true);
-            
-            setPill(pillRun, "Running", "good");
-            btnStart.disabled=true; btnStop.disabled=false; btnCal.disabled=false;
-            log("System engaged. Please calibrate.", "info");
-        } catch(e){
-            log(e.message, "bad");
+      }
+      process(inputs){
+        if(!this.enabled) return true;
+        const input = inputs[0];
+        if(!input || input.length===0) return true;
+        const ch = input[0];
+        if(!ch) return true;
+        // accumulate
+        const old = this.buf;
+        const nb = new Float32Array(old.length + ch.length);
+        nb.set(old,0);
+        nb.set(ch, old.length);
+        this.buf = nb;
+        // send chunks of ~2048 samples to reduce message overhead
+        const chunk = 2048;
+        while(this.buf.length >= chunk){
+          const out = this.buf.slice(0, chunk);
+          this.port.postMessage({type:"chunk", data: out}, [out.buffer]);
+          this.buf = this.buf.slice(chunk);
         }
+        return true;
+      }
+    }
+    registerProcessor("frame-packer", FramePacker);
+  `;
+
+  // ---------- Feature extraction ----------
+  function hannWindow(N){
+    const w = new Float32Array(N);
+    for(let n=0;n<N;n++){
+      w[n] = 0.5*(1 - Math.cos(2*Math.PI*n/(N-1)));
+    }
+    return w;
+  }
+
+  function fftMagReal(signal){
+    // radix-2 Cooley–Tukey, returns magnitude array length N/2
+    // signal length N must be power of 2
+    const N = signal.length;
+    const re = new Float32Array(N);
+    const im = new Float32Array(N);
+    for(let i=0;i<N;i++) re[i]=signal[i];
+
+    // bit reverse
+    let j=0;
+    for(let i=1;i<N;i++){
+      let bit = N>>1;
+      while(j & bit){ j ^= bit; bit >>=1; }
+      j ^= bit;
+      if(i<j){ const tr=re[i]; re[i]=re[j]; re[j]=tr; }
+    }
+    for(let len=2; len<=N; len<<=1){
+      const ang = -2*Math.PI/len;
+      const wlenRe = Math.cos(ang);
+      const wlenIm = Math.sin(ang);
+      for(let i=0;i<N;i+=len){
+        let wRe=1, wIm=0;
+        for(let k=0;k<len/2;k++){
+          const uRe = re[i+k], uIm = im[i+k];
+          const vRe = re[i+k+len/2]*wRe - im[i+k+len/2]*wIm;
+          const vIm = re[i+k+len/2]*wIm + im[i+k+len/2]*wRe;
+          re[i+k] = uRe + vRe;
+          im[i+k] = uIm + vIm;
+          re[i+k+len/2] = uRe - vRe;
+          im[i+k+len/2] = uIm - vIm;
+          const nRe = wRe*wlenRe - wIm*wlenIm;
+          const nIm = wRe*wlenIm + wIm*wlenRe;
+          wRe=nRe; wIm=nIm;
+        }
+      }
+    }
+    const mag = new Float32Array(N/2);
+    for(let i=0;i<N/2;i++){
+      mag[i] = Math.hypot(re[i], im[i]);
+    }
+    return mag;
+  }
+
+  function spectralFeatures(mag, sr){
+    const N = mag.length*2;
+    const df = sr/N;
+    let sum=0, sumf=0, sumf2=0;
+    let max=0;
+    for(let i=0;i<mag.length;i++){
+      const v = mag[i];
+      const f = i*df;
+      sum += v;
+      sumf += v*f;
+      sumf2 += v*f*f;
+      if(v>max) max=v;
+    }
+    const centroid = sum>0 ? sumf/sum : 0;
+    // rolloff 0.85
+    const target = 0.85*sum;
+    let acc=0, roll=0;
+    for(let i=0;i<mag.length;i++){
+      acc += mag[i];
+      if(acc>=target){ roll = i*df; break; }
+    }
+    // flatness
+    let logSum=0;
+    for(let i=0;i<mag.length;i++) logSum += Math.log(mag[i] + 1e-12);
+    const geo = Math.exp(logSum/mag.length);
+    const arith = sum/mag.length;
+    const flatness = arith>0 ? geo/arith : 0;
+
+    // spectral entropy (normalize power)
+    let pSum=0;
+    const p = new Float32Array(mag.length);
+    for(let i=0;i<mag.length;i++){ const v=mag[i]*mag[i]; p[i]=v; pSum+=v; }
+    let H=0;
+    if(pSum>0){
+      for(let i=0;i<p.length;i++){
+        const pi = p[i]/pSum;
+        if(pi>0) H -= pi*Math.log2(pi);
+      }
+      H /= Math.log2(p.length); // normalize 0..1
+    }
+    // spread
+    const spread = sum>0 ? Math.sqrt(Math.max(0, sumf2/sum - centroid*centroid)) : 0;
+    return {centroid, rolloff: roll, flatness, sentropy:H, spread, max};
+  }
+
+  function timeFeatures(frame){
+    const n = frame.length;
+    let s2=0, s1=0;
+    let zc=0;
+    let prev = frame[0];
+    let peak = Math.abs(prev);
+    for(let i=0;i<n;i++){
+      const x = frame[i];
+      s1 += x;
+      s2 += x*x;
+      const ax = Math.abs(x);
+      if(ax>peak) peak=ax;
+      if((x>=0 && prev<0) || (x<0 && prev>=0)) zc++;
+      prev = x;
+    }
+    const meanx = s1/n;
+    const rms = Math.sqrt(s2/n);
+    // central moments
+    let m2=0,m3=0,m4=0;
+    for(let i=0;i<n;i++){
+      const d = frame[i]-meanx;
+      const d2 = d*d;
+      m2 += d2;
+      m3 += d2*d;
+      m4 += d2*d2;
+    }
+    m2 /= n;
+    m3 /= n;
+    m4 /= n;
+    const std = Math.sqrt(m2) + 1e-12;
+    const skew = m3/(std*std*std);
+    const kurt = m4/(std*std*std*std) - 3;
+    const crest = rms>0 ? peak/rms : 0;
+    return {rms, zcr: zc/n, crest, skew, kurt};
+  }
+
+  // Permutation entropy (order=3) normalized
+  function permEntropy(x, order=3){
+    const n=x.length;
+    if(n < order+1) return 0;
+    const patterns = new Map();
+    const idx = Array.from({length:order}, (_,i)=>i);
+    for(let i=0;i<=n-order;i++){
+      const seg = x.slice(i, i+order);
+      // ordinal pattern
+      const ord = idx.slice().sort((a,b)=>seg[a]-seg[b]).join("");
+      patterns.set(ord, (patterns.get(ord)||0)+1);
+    }
+    const total = n-order+1;
+    let H=0;
+    for(const c of patterns.values()){
+      const p=c/total;
+      H -= p*Math.log2(p);
+    }
+    const maxH = Math.log2(factorial(order));
+    return maxH>0 ? H/maxH : 0;
+
+    function factorial(k){ let f=1; for(let i=2;i<=k;i++) f*=i; return f; }
+  }
+
+  // Approx sample entropy (m=2, r=0.2*std) on downsampled vector for speed
+  function sampleEntropy(x){
+    const n=x.length;
+    if(n<20) return 0;
+    // downsample to at most 120 points
+    const step = Math.max(1, Math.floor(n/120));
+    const y = [];
+    for(let i=0;i<n;i+=step) y.push(x[i]);
+    const N = y.length;
+    const m=2;
+    const mu = mean(y);
+    const v = Math.sqrt(variance(y,mu))+1e-12;
+    const r = 0.2*v;
+
+    let A=0,B=0;
+    for(let i=0;i<N-m;i++){
+      for(let j=i+1;j<N-m;j++){
+        if(maxAbsDiff(y,i,j,m) <= r) B++;
+        if(maxAbsDiff(y,i,j,m+1) <= r) A++;
+      }
+    }
+    if(B===0 || A===0) return 0;
+    const se = -Math.log(A/B);
+    // squash to 0..1 for stable scaling in feature vector
+    return clamp(se/3.0, 0, 1);
+
+    function maxAbsDiff(arr, i, j, mm){
+      let md=0;
+      for(let k=0;k<mm;k++){
+        const d = Math.abs(arr[i+k]-arr[j+k]);
+        if(d>md) md=d;
+        if(md>1e9) break;
+      }
+      return md;
+    }
+  }
+
+  // Haar wavelet energy ratios: returns 4 ratios
+  function haarEnergy(frame){
+    // copy
+    let a = Float32Array.from(frame);
+    const energies = [];
+    for(let level=0; level<4; level++){
+      const n = a.length;
+      if(n < 8) break;
+      const approx = new Float32Array(n/2);
+      const detail = new Float32Array(n/2);
+      for(let i=0;i<n/2;i++){
+        const x0 = a[2*i], x1 = a[2*i+1];
+        approx[i] = (x0 + x1)/Math.SQRT2;
+        detail[i] = (x0 - x1)/Math.SQRT2;
+      }
+      let eD=0;
+      for(let i=0;i<detail.length;i++) eD += detail[i]*detail[i];
+      energies.push(eD);
+      a = approx;
+    }
+    const sum = energies.reduce((s,v)=>s+v,0)+1e-12;
+    const ratios = [];
+    for(let i=0;i<4;i++){
+      ratios.push(i<energies.length ? energies[i]/sum : 0);
+    }
+    return ratios;
+  }
+
+  // MFCC (13)
+  function buildMel(sr, nfft, nMels=26, fmin=50, fmax=null){
+    if(!fmax) fmax = Math.min(8000, sr/2);
+    const hz2mel = (hz)=> 2595*Math.log10(1+hz/700);
+    const mel2hz = (mel)=> 700*(10**(mel/2595)-1);
+    const melMin = hz2mel(fmin), melMax = hz2mel(fmax);
+    const mels = [];
+    for(let i=0;i<nMels+2;i++){
+      mels.push(melMin + (melMax-melMin)*i/(nMels+1));
+    }
+    const hz = mels.map(mel2hz);
+    const bins = hz.map(h=> Math.floor((nfft+1)*h/sr));
+    const fb = Array.from({length:nMels}, ()=>new Float32Array(nfft/2));
+    for(let m=1;m<=nMels;m++){
+      const f0=bins[m-1], f1=bins[m], f2=bins[m+1];
+      for(let k=f0;k<f1;k++){
+        if(k>=0 && k<fb[m-1].length) fb[m-1][k] = (k - f0) / Math.max(1,(f1-f0));
+      }
+      for(let k=f1;k<f2;k++){
+        if(k>=0 && k<fb[m-1].length) fb[m-1][k] = (f2 - k) / Math.max(1,(f2-f1));
+      }
+    }
+    return fb;
+  }
+
+  function dct13(x){
+    // DCT-II, first 13 coeffs
+    const N = x.length;
+    const out = new Float32Array(13);
+    for(let k=0;k<13;k++){
+      let s=0;
+      for(let n=0;n<N;n++){
+        s += x[n]*Math.cos(Math.PI*k*(2*n+1)/(2*N));
+      }
+      out[k] = s;
+    }
+    return out;
+  }
+
+  // ---------- Engine ----------
+  const engine = {
+    running:false,
+    audio:null,
+    stream:null,
+    source:null,
+    analyser:null,
+    workletNode:null,
+    useWorklet:false,
+    configDirty:true,
+
+    // audio buffers
+    sampleRate: 48000,
+    frameSamples: 1200, // will update based on frameMs
+    accum: new Float32Array(0),
+
+    // rendering data
+    lastFrame: new Float32Array(0),
+    lastMag: new Float32Array(0),
+    magSmooth: null,
+
+    // baseline buffers
+    X: [],           // rolling feature vectors
+    scores: [],      // rolling m2 scores (for conformal)
+    model: null,
+
+    // stream states
+    lastMagForFlux: null,
+    martingale: { log10: 0 },
+    bocd: bocdInit(),
+    lastCP: 0,
+
+    // timing
+    lastFeatureTs: 0,
+    lastUI: 0,
+    fps: 0,
+
+    // current outputs
+    m2: NaN,
+    p: NaN,
+    evidence: 0,
+    isAnom: false,
+
+    get config(){
+      const ms = Number(frameMsN.value);
+      const winFrames = Number(winN.value);
+      const cwinNn = Number(cwinN.value);
+      return {
+        alpha: Number(alphaN.value),
+        robustOn: tRobust.checked,
+        conformalOn: tConformal.checked,
+        martOn: tMartingale.checked,
+        bocdOn: tBOCD.checked,
+        cleanUpdate: tCleanUpdate.checked,
+        tukeyC: Number(rcutN.value),
+
+        ms,
+        winFrames,
+        cwin: cwinNn,
+
+        feat: {
+          time: fTime.checked,
+          spec: fSpec.checked,
+          mfcc: fMFCC.checked,
+          wave: fWave.checked,
+          cx: fCx.checked
+        },
+        vis: {
+          waveform: vWaveform.checked,
+          spectrum: vSpectrum.checked,
+          meters: vMeters.checked
+        }
+      };
     },
-    
+
+    dimsFromConfig(cfg){
+      let d=0;
+      if(cfg.feat.time) d+=5;
+      if(cfg.feat.spec) d+=5;
+      if(cfg.feat.mfcc) d+=13;
+      if(cfg.feat.wave) d+=4;
+      if(cfg.feat.cx) d+=2;
+      return d;
+    },
+
+    resetBaseline(){
+      this.X = [];
+      this.scores = [];
+      this.model = null;
+      this.martingale = {log10:0};
+      this.bocd = bocdInit();
+      this.lastCP = 0;
+      log("Baseline cleared.", "warn");
+    },
+
+    applyConfig(){
+      const cfg = this.config;
+      const sr = this.sampleRate || 48000;
+      const samples = Math.max(256, Math.floor(sr * cfg.ms/1000));
+      // enforce power-of-two FFT size near samples
+      const nfft = 1 << Math.round(Math.log2(Math.max(512, samples)));
+      this.frameSamples = Math.min(samples, nfft); // use samples for time feats; use nfft buffer for FFT by padding
+      this.nfft = nfft;
+      this.window = hannWindow(nfft);
+      this.melFB = buildMel(sr, nfft, 26);
+      this.configDirty = false;
+
+      kDims.textContent = String(this.dimsFromConfig(cfg));
+      kWin.textContent = String(cfg.winFrames);
+      kCWin.textContent = String(cfg.cwin);
+
+      log(`Config applied: frame=${cfg.ms}ms (samples≈${samples}), nfft=${nfft}, winFrames=${cfg.winFrames}, cwin=${cfg.cwin}.`);
+    },
+
+    async startMic(){
+      try{
+        setErr(null);
+        if(!isSecureCtx()){
+          ctxWarn.style.display = "block";
+          setPill(pillCtx, "Context: insecure", "warn");
+        }else{
+          ctxWarn.style.display = "none";
+          setPill(pillCtx, "Context: secure", "good");
+        }
+
+        this.audio = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
+        // Some browsers start suspended; resume after user gesture.
+        try{ await this.audio.resume(); }catch(_e){}
+        this.sampleRate = this.audio.sampleRate;
+        setPill(pillSR, `SR: ${this.sampleRate} Hz`, "good");
+        this.applyConfig();
+
+        this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
+        this.source = this.audio.createMediaStreamSource(this.stream);
+        // After permission is granted, labels become available
+        refreshDevices();
+
+        // Optional audio monitoring (muted by default to avoid feedback)
+        this.monitorGain = this.audio.createGain();
+        const mg = (chkMonitor && chkMonitor.checked) ? monitorGainValue() : 0;
+        this.monitorGain.gain.value = mg;
+        // Connect mic to output through a controllable gain. Use headphones to avoid feedback.
+        this.source.connect(this.monitorGain).connect(this.audio.destination);
+
+
+        // analyser for visuals
+        this.analyser = this.audio.createAnalyser();
+        this.analyser.fftSize = 2048;
+        this.analyser.smoothingTimeConstant = 0.25;
+
+        // worklet path
+        this.useWorklet = false;
+        if(this.audio.audioWorklet && window.AudioWorkletNode){
+          try{
+            const blobURL = URL.createObjectURL(new Blob([workletCode], {type:"application/javascript"}));
+            await this.audio.audioWorklet.addModule(blobURL);
+            URL.revokeObjectURL(blobURL);
+            this.workletNode = new AudioWorkletNode(this.audio, "frame-packer");
+            this.workletNode.port.onmessage = (e)=>{
+              if(e.data && e.data.type==="chunk"){
+                const arr = new Float32Array(e.data.data);
+                this.onSamples(arr);
+              }
+            };
+            this.useWorklet = true;
+          }catch(e){
+            log("AudioWorklet failed; falling back to ScriptProcessor.", "warn");
+            this.useWorklet = false;
+          }
+        }
+
+        if(this.useWorklet){
+          this.source.connect(this.workletNode);
+          this.source.connect(this.analyser);
+          // sink to keep graph alive without echo
+          const gain = this.audio.createGain();
+          gain.gain.value = 0;
+          this.workletNode.connect(gain).connect(this.audio.destination);
+          setPill(pillEngine, "Engine: AudioWorklet", "good");
+        }else{
+          // fallback: ScriptProcessor
+          const proc = this.audio.createScriptProcessor(2048, 1, 1);
+          proc.onaudioprocess = (ev)=>{
+            const input = ev.inputBuffer.getChannelData(0);
+            this.onSamples(new Float32Array(input));
+          };
+          this.source.connect(proc);
+          this.source.connect(this.analyser);
+          const gain = this.audio.createGain();
+          gain.gain.value = 0;
+          proc.connect(gain).connect(this.audio.destination);
+          this.workletNode = proc;
+          setPill(pillEngine, "Engine: ScriptProcessor", "warn");
+        }
+
+        this.running = true;
+        setPill(pillRun, "State: running", "good");
+        setPill(pillHealth, "Health: OK", "good");
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        btnCal.disabled = false;
+
+        log("Microphone started. For best results: Calibrate in a quiet room, then introduce controlled stimuli.", "info");
+      }catch(e){
+        this.stop();
+        setErr(`Start Mic failed: ${e && e.message ? e.message : String(e)}`);
+        setPill(pillHealth, "Health: ERROR", "bad");
+        log(`Start Mic error: ${e && e.message ? e.message : String(e)}`, "bad");
+      }
+    },
+
     stop(){
-        this.toggleSchumann(false);
-        if(this.audio) this.audio.close();
-        this.running=false;
-        setPill(pillRun, "Stopped", "warn");
-        btnStart.disabled=false; btnStop.disabled=true; btnCal.disabled=true;
+      this.running = false;
+      setPill(pillRun, "State: idle", "warn");
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      btnCal.disabled = true;
+
+      try{
+        if(this.workletNode && this.workletNode.disconnect) this.workletNode.disconnect();
+      }catch(_){}
+      try{
+        if(this.source && this.source.disconnect) this.source.disconnect();
+      }catch(_){}
+      try{
+        if(this.analyser && this.analyser.disconnect) this.analyser.disconnect();
+      }catch(_){}
+      try{
+        if(this.stream){
+          for(const t of this.stream.getTracks()) t.stop();
+        }
+      }catch(_){}
+      try{
+        if(this.audio && this.audio.state!=="closed") this.audio.close();
+      }catch(_){}
+
+      this.audio = null; this.stream=null; this.source=null; this.analyser=null; this.workletNode=null;
+      log("Stopped.", "warn");
     },
-    
-    toggleSchumann(isActive){
-        if(!this.audio) return;
-        if(this.schOsc) { try{this.schOsc.stop();}catch(e){} this.schOsc.disconnect(); this.schOsc=null; }
-        if(this.schLFO) { try{this.schLFO.stop();}catch(e){} this.schLFO.disconnect(); this.schLFO=null; }
-        if(this.schGain){ this.schGain.disconnect(); this.schGain=null; }
-        
-        if(isActive){
-            const t = this.audio.currentTime;
-            this.schGain = this.audio.createGain();
-            this.schOsc = this.audio.createOscillator();
-            this.schOsc.type = "sine"; this.schOsc.frequency.value = 110; 
-            this.schLFO = this.audio.createOscillator();
-            this.schLFO.type = "sine"; this.schLFO.frequency.value = 7.83; 
-            
-            this.schOsc.connect(this.schGain);
-            this.schGain.connect(this.audio.destination);
-            this.schGain.gain.setValueAtTime(0.08, t);
-            this.schLFO.connect(this.schGain.gain); 
-            
-            this.schOsc.start(t);
-            this.schLFO.start(t);
-            $("schumannStatus").style.opacity = 1; $("schumannStatus").classList.add("active-effect");
-            log("Schumann Resonator (7.83Hz) Active.", "order");
-        } else {
-            $("schumannStatus").style.opacity = 0; $("schumannStatus").classList.remove("active-effect");
-        }
+
+    async calibrate(seconds=10){
+      if(!this.running){
+        log("Calibrate requires running audio. Use Self-Test if mic is blocked.", "warn");
+        return;
+      }
+      this.resetBaseline();
+      setPill(pillRun, `State: calibrating (${seconds}s)`, "warn");
+      log(`Calibration started: collecting baseline for ${seconds}s...`, "warn");
+      const start = nowMs();
+      while(nowMs() - start < seconds*1000){
+        await new Promise(r=>setTimeout(r, 80));
+      }
+      // Build model
+      this.recomputeModel(true);
+      setPill(pillRun, "State: running", "good");
+      log("Calibration complete.", "info");
     },
-    
-    onAudio(buf){
-        if(!this.running) return;
-        const cfg = this.config;
-        
-        // 1. RMS
-        let sumSq=0; for(let i=0;i<buf.length;i++) sumSq+=buf[i]*buf[i];
-        const rms = Math.sqrt(sumSq/buf.length);
-        
-        // 2. FFT & Entropy
-        const freq = new Uint8Array(this.analyser.frequencyBinCount);
-        this.analyser.getByteFrequencyData(freq);
-        let specSum=0; for(let i=0;i<freq.length;i++) specSum+=freq[i];
-        let entropy = 0;
-        if(specSum > 0){
-            for(let i=0;i<freq.length;i++){
-                const prob = freq[i]/specSum;
-                if(prob>0) entropy -= prob * Math.log2(prob);
-            }
-            entropy /= Math.log2(freq.length);
-        }
-        
-        // Feat Vector
-        const feats = [rms, entropy];
-        this.X.push(feats);
-        if(this.X.length > cfg.win) this.X.shift();
-        
-        let m2 = 0, p = 1, isAnom = false, isOrdered = false;
-        
-        if(this.model && cfg.robust){
-            m2 = mahalanobis(this.model, feats);
-            
-            // Conformal Prediction Logic
-            if(cfg.conformal){
-                let gt = 0;
-                for(const s of this.scores) if(s >= m2) gt++;
-                p = (gt+1)/(this.scores.length+1);
-            } else {
-                p = Math.exp(-m2/2); // Fallback
-            }
-            
-            isAnom = p < cfg.alpha;
-            
-            // Update scores (gating)
-            if(!isAnom){
-                this.scores.push(m2);
-                if(this.scores.length > cfg.cwin) this.scores.shift();
-            }
-            
-            // Martingale
-            if(cfg.mart){
-                const factor = 0.7 * (p ** (0.7-1));
-                this.martingale += Math.log10(Math.max(1e-10, factor));
-                if(this.martingale < 0) this.martingale = 0;
-            }
-            
-            // Entropy (Negentropy)
-            if(cfg.invEntropy && this.baselineEntropy > 0){
-                if(entropy < this.baselineEntropy * 0.90 && entropy > 0.1) isOrdered = true;
-            }
-        }
-        
-        // LOGIC
-        if(isAnom && (!this.lastAlert || nowMs()-this.lastAlert>800)){
-            this.lastAlert = nowMs();
-            log(`Anomaly! m²=${m2.toFixed(1)} p=${p.toFixed(4)}`, "bad");
-        }
-        if(isOrdered && (!this.lastOrder || nowMs()-this.lastOrder>1500)){
-            this.lastOrder = nowMs();
-            log(`ORDER DETECTED (Negentropy)`, "order");
-        }
-        
-        this.uiData = { m2, p, entropy, mart:this.martingale, isAnom, isOrdered, buf };
+
+    recomputeModel(force=false){
+      const cfg = this.config;
+      const n = this.X.length;
+      if(n < Math.max(30, cfg.winFrames*0.25)) return;
+      // Recompute every ~1 second of frames unless forced
+      const minGap = 1000;
+      const t = nowMs();
+      if(!force && (t - this.lastModelTs < minGap)) return;
+      this.lastModelTs = t;
+
+      const M = robustMeanCov(this.X, cfg.tukeyC);
+      if(!M) return;
+      this.model = M;
     },
-    
-    async calibrate(sec=10){
-        setPill(pillRun, "Calibrating...", "warn");
-        this.X = []; this.scores = []; this.model = null;
-        log("Calibrating...", "warn");
-        
-        await new Promise(r => setTimeout(r, sec*1000));
-        
-        if(this.X.length > 10){
-            this.model = robustMeanCov(this.X);
-            let eSum=0; for(const f of this.X) eSum+=f[1];
-            this.baselineEntropy = eSum/this.X.length;
-            log(`Calibrated. Entropy Base: ${this.baselineEntropy.toFixed(3)}`, "good");
+
+    onSamples(samples){
+      if(this.configDirty) this.applyConfig();
+
+      // accumulate until we have frameSamples
+      const old = this.accum;
+      const nb = new Float32Array(old.length + samples.length);
+      nb.set(old,0);
+      nb.set(samples, old.length);
+      this.accum = nb;
+
+      const needed = this.frameSamples;
+      while(this.accum.length >= needed){
+        const frame = this.accum.slice(0, needed);
+        this.accum = this.accum.slice(needed);
+        this.processFrame(frame);
+      }
+    },
+
+    makeFeatureVector(frame){
+      const cfg = this.config;
+      const feats = [];
+
+      // Time
+      if(cfg.feat.time){
+        const tf = timeFeatures(frame);
+        feats.push(tf.rms, tf.zcr, tf.crest, tf.skew, tf.kurt);
+      }
+
+      // Spectral + MFCC: use padded FFT buffer
+      let mag = null;
+      if(cfg.feat.spec || cfg.feat.mfcc){
+        const nfft = this.nfft;
+        const buf = new Float32Array(nfft);
+        buf.set(frame,0);
+        // window
+        for(let i=0;i<nfft;i++) buf[i] *= this.window[i];
+        mag = fftMagReal(buf);
+        this.lastMag = mag;
+
+        if(!this.magSmooth || this.magSmooth.length!==mag.length) this.magSmooth = new Float32Array(mag.length);
+        const a = 0.15; // smoothing
+        for(let i=0;i<mag.length;i++) this.magSmooth[i] = (1-a)*this.magSmooth[i] + a*mag[i];
+
+        if(cfg.feat.spec){
+          const sp = spectralFeatures(this.magSmooth, this.sampleRate);
+          // flux from previous magnitude
+          let flux = 0;
+          if(this.lastMagForFlux && this.lastMagForFlux.length===this.magSmooth.length){
+            for(let i=0;i<this.magSmooth.length;i++){
+              const d = this.magSmooth[i]-this.lastMagForFlux[i];
+              flux += Math.max(0,d);
+            }
+            flux /= this.magSmooth.length;
+          }
+          this.lastMagForFlux = Float32Array.from(this.magSmooth);
+
+          feats.push(sp.centroid/8000, sp.rolloff/8000, sp.flatness, sp.sentropy, clamp(flux*10,0,5));
         }
-        setPill(pillRun, "Monitoring", "good");
+
+        if(cfg.feat.mfcc){
+          // power spectrum
+          const pow = new Float32Array(this.magSmooth.length);
+          for(let i=0;i<pow.length;i++) pow[i] = this.magSmooth[i]*this.magSmooth[i];
+          // mel energies
+          const melE = new Float32Array(this.melFB.length);
+          for(let m=0;m<this.melFB.length;m++){
+            let s=0;
+            const fb = this.melFB[m];
+            for(let k=0;k<fb.length;k++) s += fb[k]*pow[k];
+            melE[m] = Math.log(s + 1e-12);
+          }
+          const c = dct13(melE);
+          // normalize scale
+          for(let i=0;i<c.length;i++) feats.push(clamp(c[i]/30, -3, 3));
+        }
+      }
+
+      // Wavelets
+      if(cfg.feat.wave){
+        const w = haarEnergy(frame);
+        feats.push(...w);
+      }
+
+      // Complexity
+      if(cfg.feat.cx){
+        const pe = permEntropy(Array.from(frame), 3);
+        const se = sampleEntropy(Array.from(frame));
+        feats.push(pe, se);
+      }
+
+      return { feats, mag };
+    },
+
+    processFrame(frame){
+      this.lastFrame = frame;
+
+      const cfg = this.config;
+      const {feats} = this.makeFeatureVector(frame);
+
+      const dims = feats.length;
+      if(dims === 0) return;
+
+      // update baseline buffer
+      // We always maintain baseline buffer; the update gating happens after scoring.
+      // cap to winFrames
+      this.X.push(feats);
+      const maxX = cfg.winFrames;
+      if(this.X.length > maxX) this.X.shift();
+
+      // recompute robust model periodically
+      if(cfg.robustOn) this.recomputeModel(false);
+
+      // score if model available
+      let m2 = NaN;
+      if(cfg.robustOn && this.model){
+        m2 = mahalanobisM2(this.model, feats);
+      }else{
+        // fallback: simple energy-based score
+        m2 = feats.reduce((s,v)=>s+v*v,0) / dims;
+      }
+
+      // p-values
+      let p = NaN;
+      let pSrc = "—";
+
+      if(cfg.conformalOn){
+        // conformal on m2 with rolling score list
+        p = conformalP(this.scores, m2);
+        pSrc = "conformal";
+      }else{
+        // parametric chi-square (approx) if robust model and gaussian-ish; else NaN
+        const k = dims;
+        p = 1 - chi2CDF(m2, k);
+        pSrc = "chi²";
+      }
+
+      // detect anomaly
+      const alphaVal = cfg.alpha;
+      const isAnom = Number.isFinite(p) ? (p <= alphaVal) : (m2 > 25);
+
+      // baseline update gating for conformal reference:
+      // include score only if cleanUpdate is disabled OR not anomaly
+      if(!cfg.cleanUpdate || !isAnom){
+        this.scores.push(m2);
+        const maxS = cfg.cwin;
+        if(this.scores.length > maxS) this.scores.shift();
+      }
+
+      // martingale evidence
+      if(cfg.martOn && Number.isFinite(p)){
+        this.martingale = martingaleUpdate(this.martingale, p, 0.7);
+      }else if(!cfg.martOn){
+        this.martingale.log10 = 0;
+      }
+
+      // BOCD on log(m2+1)
+      let cp = 0;
+      if(cfg.bocdOn){
+        const x = Math.log(m2 + 1);
+        const upd = bocdUpdate(this.bocd, x);
+        this.bocd = upd.st;
+        cp = upd.cp;
+        this.lastCP = cp;
+      }else{
+        this.lastCP = 0;
+      }
+
+      this.m2 = m2;
+      this.p = p;
+      this.evidence = this.martingale.log10;
+      this.isAnom = isAnom;
+
+      // KPI updates
+      kM2.textContent = fmt(m2, 3);
+      kP.textContent = Number.isFinite(p) ? fmt(p, 5) : "—";
+      kE.textContent = fmt(this.evidence, 3);
+      kPs.textContent = pSrc;
+      kM2s.textContent = cfg.robustOn ? "robust Mahalanobis" : "fallback norm";
+
+      // pill
+      if(isAnom){
+        setPill(pillAnom, "Anomaly: YES", "bad");
+      }else{
+        setPill(pillAnom, "Anomaly: no", "good");
+      }
+
+      // log events with throttling
+      const t = nowMs();
+      if(isAnom && (!this.lastAnomTs || (t - this.lastAnomTs > 500))){
+        this.lastAnomTs = t;
+        log(`ANOMALY p=${Number.isFinite(p)?p.toExponential(2):"—"} m²=${m2.toFixed(2)} cp=${cp.toFixed(3)} dims=${dims}`, "bad");
+      }else if(cfg.bocdOn && cp > 0.35 && (!this.lastCpTs || (t - this.lastCpTs > 1200))){
+        this.lastCpTs = t;
+        log(`Regime shift candidate: cp=${cp.toFixed(3)} (BOCD)`, "warn");
+      }
+    },
+
+    async selfTest(){
+      setErr(null);
+      log("Self-Test: generating synthetic baseline + injected events (no mic needed).", "info");
+      this.resetBaseline();
+      this.applyConfig();
+      setPill(pillRun, "State: self-test", "warn");
+      setPill(pillHealth, "Health: OK", "good");
+
+      // Use a local sample rate assumption for synthetic frames
+      this.sampleRate = 48000;
+      setPill(pillSR, `SR: ${this.sampleRate} Hz (synthetic)`, "warn");
+
+      const cfg = this.config;
+      const N = this.frameSamples;
+
+      // 1) baseline noise
+      for(let i=0;i<Math.min(220, cfg.winFrames); i++){
+        const frame = new Float32Array(N);
+        for(let n=0;n<N;n++) frame[n] = 0.02*randn();
+        this.processFrame(frame);
+        await sleep(5);
+      }
+      this.recomputeModel(true);
+
+      // 2) injected impulse bursts
+      for(let i=0;i<40;i++){
+        const frame = new Float32Array(N);
+        for(let n=0;n<N;n++) frame[n] = 0.02*randn();
+        if(i%8===0){
+          for(let k=0;k<12;k++){
+            const idx = Math.floor(Math.random()*N);
+            frame[idx] += 0.9*(Math.random()*2-1);
+          }
+        }
+        this.processFrame(frame);
+        await sleep(10);
+      }
+
+      // 3) sine burst
+      for(let i=0;i<60;i++){
+        const frame = new Float32Array(N);
+        const f = 880;
+        for(let n=0;n<N;n++){
+          const t = n/this.sampleRate;
+          const sig = (i>15 && i<40) ? 0.18*Math.sin(2*Math.PI*f*t) : 0;
+          frame[n] = 0.02*randn() + sig;
+        }
+        this.processFrame(frame);
+        await sleep(10);
+      }
+
+      // 4) chirp
+      for(let i=0;i<70;i++){
+        const frame = new Float32Array(N);
+        const t0 = i/70;
+        const f1 = 300, f2 = 3500;
+        for(let n=0;n<N;n++){
+          const t = n/this.sampleRate;
+          const ft = f1 + (f2-f1)*t0;
+          const sig = (i>20 && i<55) ? 0.12*Math.sin(2*Math.PI*ft*t) : 0;
+          frame[n] = 0.02*randn() + sig;
+        }
+        this.processFrame(frame);
+        await sleep(10);
+      }
+
+      setPill(pillRun, "State: idle", "warn");
+      log("Self-Test complete. If you saw anomaly logs during impulses/sine/chirp, the full pipeline is functioning.", "info");
+
+      function randn(){
+        // Box-Muller
+        let u=0,v=0;
+        while(u===0) u=Math.random();
+        while(v===0) v=Math.random();
+        return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+      }
+      function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+    }
+  };
+
+  // ---------- Rendering ----------
+  const waveCtx = cWave.getContext("2d");
+  const specCtx = cSpec.getContext("2d");
+  const mCtx = cMeters.getContext("2d");
+
+  function drawWave(){
+    const cfg = engine.config;
+    const W = cWave.width, H = cWave.height;
+    waveCtx.clearRect(0,0,W,H);
+
+    // grid
+    waveCtx.globalAlpha = 1;
+    waveCtx.strokeStyle = "rgba(255,255,255,.06)";
+    waveCtx.lineWidth = 1;
+    for(let y=0;y<=H;y+=H/8){
+      waveCtx.beginPath(); waveCtx.moveTo(0,y); waveCtx.lineTo(W,y); waveCtx.stroke();
+    }
+    for(let x=0;x<=W;x+=W/10){
+      waveCtx.beginPath(); waveCtx.moveTo(x,0); waveCtx.lineTo(x,H); waveCtx.stroke();
+    }
+
+    if(!cfg.vis.waveform) return;
+
+    const f = engine.lastFrame;
+    if(!f || f.length===0) return;
+
+    // glow
+    const grad = waveCtx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0, "rgba(124,92,255,.95)");
+    grad.addColorStop(1, "rgba(46,230,166,.90)");
+    waveCtx.strokeStyle = grad;
+    waveCtx.lineWidth = 2;
+
+    waveCtx.beginPath();
+    for(let i=0;i<f.length;i++){
+      const x = i*(W/(f.length-1));
+      const y = H/2 - f[i]*(H*0.42);
+      if(i===0) waveCtx.moveTo(x,y);
+      else waveCtx.lineTo(x,y);
+    }
+    waveCtx.shadowColor = "rgba(124,92,255,.55)";
+    waveCtx.shadowBlur = 14;
+    waveCtx.stroke();
+    waveCtx.shadowBlur = 0;
+
+    // center line
+    waveCtx.strokeStyle = "rgba(255,255,255,.12)";
+    waveCtx.beginPath();
+    waveCtx.moveTo(0,H/2); waveCtx.lineTo(W,H/2); waveCtx.stroke();
+  }
+
+  function drawSpec(){
+    const cfg = engine.config;
+    const W = cSpec.width, H = cSpec.height;
+    specCtx.clearRect(0,0,W,H);
+
+    // grid
+    specCtx.strokeStyle = "rgba(255,255,255,.06)";
+    specCtx.lineWidth = 1;
+    for(let y=0;y<=H;y+=H/6){
+      specCtx.beginPath(); specCtx.moveTo(0,y); specCtx.lineTo(W,y); specCtx.stroke();
+    }
+    for(let x=0;x<=W;x+=W/12){
+      specCtx.beginPath(); specCtx.moveTo(x,0); specCtx.lineTo(x,H); specCtx.stroke();
+    }
+
+    if(!cfg.vis.spectrum) return;
+
+    const mag = engine.magSmooth || engine.lastMag;
+    if(!mag || mag.length===0) return;
+
+    // draw bars
+    const n = mag.length;
+    const bins = 160; // compress
+    const step = Math.max(1, Math.floor(n/bins));
+    const grad = specCtx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0, "rgba(46,230,166,.85)");
+    grad.addColorStop(1, "rgba(124,92,255,.90)");
+    specCtx.fillStyle = grad;
+    for(let i=0;i<bins;i++){
+      let s=0;
+      for(let k=0;k<step;k++){
+        const idx = i*step+k;
+        if(idx<n) s += mag[idx];
+      }
+      const v = s/step;
+      const db = 20*Math.log10(v+1e-6); // ~[-120, ?]
+      const norm = clamp((db+80)/80, 0, 1);
+      const h = norm * (H*0.92);
+      const x = i*(W/bins);
+      const bw = (W/bins) * 0.85;
+      specCtx.fillRect(x, H-h, bw, h);
+    }
+  }
+
+  function gauge(ctx, cx, cy, r, value, vmin, vmax, label, sub, goodIfHigh=true){
+    const t = clamp((value - vmin)/(vmax-vmin), 0, 1);
+    // background arc
+    ctx.lineWidth = 16;
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.beginPath();
+    ctx.arc(cx,cy,r, Math.PI*0.75, Math.PI*2.25);
+    ctx.stroke();
+
+    // value arc
+    const hue = goodIfHigh ? lerp(350, 140, t) : lerp(140, 350, t); // red->green or reverse
+    ctx.strokeStyle = `hsla(${hue}, 90%, 65%, .95)`;
+    ctx.shadowColor = `hsla(${hue}, 90%, 65%, .55)`;
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r, Math.PI*0.75, Math.PI*(0.75 + 1.5*t));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "rgba(230,236,255,.95)";
+    ctx.font = "700 14px ui-sans-serif, system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(label, cx, cy - 2);
+
+    ctx.fillStyle = "rgba(154,166,214,.95)";
+    ctx.font = "12px ui-sans-serif, system-ui";
+    ctx.fillText(sub, cx, cy + 18);
+  }
+
+  function drawMeters(){
+    const cfg = engine.config;
+    const W = cMeters.width, H = cMeters.height;
+    mCtx.clearRect(0,0,W,H);
+
+    // background grid
+    mCtx.strokeStyle = "rgba(255,255,255,.05)";
+    for(let y=20;y<H;y+=40){
+      mCtx.beginPath(); mCtx.moveTo(0,y); mCtx.lineTo(W,y); mCtx.stroke();
+    }
+
+    if(!cfg.vis.meters) return;
+
+    const m2 = engine.m2;
+    const p = engine.p;
+    const e = engine.evidence;
+    const cp = engine.lastCP;
+
+    // panel labels
+    mCtx.fillStyle = "rgba(154,166,214,.9)";
+    mCtx.font = "12px ui-sans-serif, system-ui";
+    mCtx.fillText("Robust scoring", 18, 22);
+    mCtx.fillText("Calibration & uncertainty", 18, 246);
+    mCtx.fillText("Sequential", 18, 470);
+
+    // gauges
+    gauge(mCtx, 150, 120, 70, Number.isFinite(m2)?Math.log10(m2+1):0, 0, 2.0, "m²", Number.isFinite(m2)?`log10=${fmt(Math.log10(m2+1),3)}`:"—", false);
+    gauge(mCtx, 410, 120, 70, Number.isFinite(cp)?cp:0, 0, 1, "BOCD", `cp=${fmt(cp,3)}`, true);
+
+    gauge(mCtx, 150, 345, 70, Number.isFinite(p)?-Math.log10(p):0, 0, 6, "p-value", Number.isFinite(p)?`-log10=${fmt(-Math.log10(p),3)}`:"—", true);
+    gauge(mCtx, 410, 345, 70, Number.isFinite(m2)?m2:0, 0, 40, "m²", Number.isFinite(m2)?`m²=${fmt(m2,2)}`:"—", false);
+
+    gauge(mCtx, 150, 565, 70, e, -8, 8, "Evidence", `log10=${fmt(e,3)}`, true);
+
+    // anomaly banner
+    if(engine.isAnom){
+      mCtx.fillStyle = "rgba(255,77,109,.14)";
+      mCtx.strokeStyle = "rgba(255,77,109,.35)";
+      mCtx.lineWidth = 2;
+      mCtx.roundRect(20, 30, W-40, 52, 14);
+      mCtx.fill(); mCtx.stroke();
+      mCtx.fillStyle = "rgba(255,77,109,.98)";
+      mCtx.font = "800 18px ui-sans-serif, system-ui";
+      mCtx.textAlign="center";
+      mCtx.fillText("ANOMALY DETECTED", W/2, 64);
+      mCtx.textAlign="left";
+    }else{
+      mCtx.fillStyle = "rgba(46,230,166,.10)";
+      mCtx.strokeStyle = "rgba(46,230,166,.28)";
+      mCtx.lineWidth = 2;
+      mCtx.roundRect(20, 30, W-40, 52, 14);
+      mCtx.fill(); mCtx.stroke();
+      mCtx.fillStyle = "rgba(46,230,166,.95)";
+      mCtx.font = "800 18px ui-sans-serif, system-ui";
+      mCtx.textAlign="center";
+      mCtx.fillText("BASELINE / NO ANOMALY", W/2, 64);
+      mCtx.textAlign="left";
+    }
+  }
+
+  // Polyfill roundRect for older
+  if(!CanvasRenderingContext2D.prototype.roundRect){
+    CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+      const rr = typeof r === "number" ? {tl:r,tr:r,br:r,bl:r} : r;
+      this.beginPath();
+      this.moveTo(x+rr.tl, y);
+      this.lineTo(x+w-rr.tr, y);
+      this.quadraticCurveTo(x+w, y, x+w, y+rr.tr);
+      this.lineTo(x+w, y+h-rr.br);
+      this.quadraticCurveTo(x+w, y+h, x+w-rr.br, y+h);
+      this.lineTo(x+rr.bl, y+h);
+      this.quadraticCurveTo(x, y+h, x, y+h-rr.bl);
+      this.lineTo(x, y+rr.tl);
+      this.quadraticCurveTo(x, y, x+rr.tl, y);
+      this.closePath();
+      return this;
+    };
+  }
+
+  function uiLoop(){
+    const t = nowMs();
+    if(engine.lastUI){
+      const dt = t - engine.lastUI;
+      const inst = 1000/Math.max(1,dt);
+      engine.fps = 0.9*engine.fps + 0.1*inst;
+    }
+    engine.lastUI = t;
+    setPill(pillFPS, `UI fps: ${engine.fps.toFixed(1)}`, engine.fps>35 ? "good" : (engine.fps>25 ? "warn" : "bad"));
+
+    drawWave();
+    drawSpec();
+    drawMeters();
+
+    requestAnimationFrame(uiLoop);
+  }
+
+  // ---------- Wiring ----------
+  function refreshContextPill(){
+    if(isSecureCtx()){
+      setPill(pillCtx, "Context: secure", "good");
+      ctxWarn.style.display = "none";
+    }else{
+      setPill(pillCtx, "Context: insecure", "warn");
+      ctxWarn.style.display = "block";
+    }
+  }
+
+  btnStart.addEventListener("click", ()=>engine.startMic());
+  btnStop.addEventListener("click", ()=>engine.stop());
+  btnCal.addEventListener("click", ()=>engine.calibrate(10));
+  btnSelf.addEventListener("click", ()=>engine.selfTest());
+
+  refreshContextPill();
+  setPill(pillRun, "State: idle", "warn");
+  setPill(pillHealth, "Health: OK", "good");
+  setPill(pillEngine, "Engine: —", "warn");
+  setPill(pillSR, "SR: —", "warn");
+  setPill(pillAnom, "Anomaly: —", "warn");
+
+  function mathSelfCheck(){
+  try{
+    // cholesky identity
+    const A = [[2,0.2],[0.2,1.3]];
+    const L = cholesky(A);
+    const b = [0.5,-0.1];
+    const x = cholSolve(L,b);
+    // verify A*x approx b
+    const bx0 = A[0][0]*x[0] + A[0][1]*x[1];
+    const bx1 = A[1][0]*x[0] + A[1][1]*x[1];
+    const err = Math.hypot(bx0-b[0], bx1-b[1]);
+    if(!Number.isFinite(err) || err>1e-6) throw new Error("Linear algebra self-check failed.");
+
+    // chi2CDF monotonic sanity
+    const c1 = chi2CDF(0.5, 4), c2 = chi2CDF(5, 4);
+    if(!(c2 > c1 && c1>=0 && c2<=1)) throw new Error("chi2CDF self-check failed.");
+
+    setPill(pillHealth, "Health: OK", "good");
+    setErr(null);
+  }catch(e){
+    setPill(pillHealth, "Health: ERROR", "bad");
+    setErr(`Math self-check failed: ${e && e.message ? e.message : String(e)}`);
+    log(`Math self-check failed: ${e && e.message ? e.message : String(e)}`, "bad");
+  }
+}
+
+  log("Loaded v2.5. If mic fails, run Self-Test first to verify the math pipeline.", "info");
+
+  mathSelfCheck();
+
+  // keep KPIs synced to current settings
+  setInterval(()=>{
+    if(engine.configDirty && !engine.running){
+      engine.applyConfig();
+    }
+    const d = engine.dimsFromConfig(engine.config);
+    kDims.textContent = String(d);
+    kWin.textContent = String(engine.config.winFrames);
+    kCWin.textContent = String(engine.config.cwin);
+
+    // If user changes dims while running, baseline must be reset to avoid mixing spaces.
+    if(engine.running && engine.lastDims && d !== engine.lastDims){
+      engine.lastDims = d;
+      engine.resetBaseline();
+      log("Feature dimensionality changed while running; baseline reset to preserve correctness.", "warn");
+    }else{
+      engine.lastDims = d;
+    }
+  }, 300);
+
+  // render loop
+  requestAnimationFrame(uiLoop);
+})();
+
+// Initialize device list
+refreshDevices();
+monitorGainValue();
+
+
+// ========== PRESET SYSTEM ==========
+const PRESETS = {
+  balanced: {
+    name: "Balanced",
+    alpha: 0.01,
+    rcut: 4.0,
+    frameMs: 25,
+    win: 240,
+    cwin: 300,
+    features: { fTime: true, fSpec: true, fMFCC: true, fWave: true, fCx: true },
+    modalities: { tRobust: true, tConformal: true, tMartingale: true, tBOCD: true }
+  },
+  sensitive: {
+    name: "High Sensitivity",
+    alpha: 0.02,
+    rcut: 3.0,
+    frameMs: 20,
+    win: 180,
+    cwin: 250,
+    features: { fTime: true, fSpec: true, fMFCC: true, fWave: true, fCx: true },
+    modalities: { tRobust: true, tConformal: true, tMartingale: true, tBOCD: true }
+  },
+  conservative: {
+    name: "Conservative",
+    alpha: 0.005,
+    rcut: 5.0,
+    frameMs: 30,
+    win: 360,
+    cwin: 400,
+    features: { fTime: true, fSpec: true, fMFCC: false, fWave: false, fCx: false },
+    modalities: { tRobust: true, tConformal: true, tMartingale: false, tBOCD: true }
+  },
+  performance: {
+    name: "Performance",
+    alpha: 0.01,
+    rcut: 4.0,
+    frameMs: 30,
+    win: 180,
+    cwin: 200,
+    features: { fTime: true, fSpec: true, fMFCC: false, fWave: false, fCx: false },
+    modalities: { tRobust: true, tConformal: true, tMartingale: false, tBOCD: false }
+  },
+  quality: {
+    name: "Max Quality",
+    alpha: 0.01,
+    rcut: 4.0,
+    frameMs: 25,
+    win: 360,
+    cwin: 400,
+    features: { fTime: true, fSpec: true, fMFCC: true, fWave: true, fCx: true },
+    modalities: { tRobust: true, tConformal: true, tMartingale: true, tBOCD: true }
+  },
+  evp: {
+    name: "EVP Mode",
+    alpha: 0.015,
+    rcut: 3.5,
+    frameMs: 25,
+    win: 280,
+    cwin: 350,
+    features: { fTime: true, fSpec: true, fMFCC: true, fWave: false, fCx: true },
+    modalities: { tRobust: true, tConformal: true, tMartingale: true, tBOCD: true }
+  }
+};
+
+let currentPreset = "balanced";
+let anomalyEventLog = [];
+
+function applyPreset(presetName) {
+  const preset = PRESETS[presetName];
+  if (!preset) return;
+  
+  // Apply threshold values
+  document.getElementById("alpha").value = preset.alpha;
+  document.getElementById("alphaN").value = preset.alpha;
+  document.getElementById("rcut").value = preset.rcut;
+  document.getElementById("rcutN").value = preset.rcut;
+  document.getElementById("frameMs").value = preset.frameMs;
+  document.getElementById("frameMsN").value = preset.frameMs;
+  document.getElementById("win").value = preset.win;
+  document.getElementById("winN").value = preset.win;
+  document.getElementById("cwin").value = preset.cwin;
+  document.getElementById("cwinN").value = preset.cwin;
+  
+  // Apply feature toggles
+  Object.keys(preset.features).forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.checked = preset.features[key];
+  });
+  
+  // Apply modality toggles
+  Object.keys(preset.modalities).forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.checked = preset.modalities[key];
+  });
+  
+  // Update button states
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  const activeBtn = document.querySelector(`[data-preset="${presetName}"]`);
+  if (activeBtn) activeBtn.classList.add("active");
+  
+  currentPreset = presetName;
+  log(`Applied preset: ${preset.name}`, "good");
+}
+
+// Export configuration
+function exportConfig() {
+  const config = {
+    version: "3.0",
+    preset: currentPreset,
+    timestamp: new Date().toISOString(),
+    settings: {
+      alpha: parseFloat(document.getElementById("alpha").value),
+      rcut: parseFloat(document.getElementById("rcut").value),
+      frameMs: parseInt(document.getElementById("frameMs").value),
+      win: parseInt(document.getElementById("win").value),
+      cwin: parseInt(document.getElementById("cwin").value),
+      features: {
+        fTime: document.getElementById("fTime").checked,
+        fSpec: document.getElementById("fSpec").checked,
+        fMFCC: document.getElementById("fMFCC").checked,
+        fWave: document.getElementById("fWave").checked,
+        fCx: document.getElementById("fCx").checked
+      },
+      modalities: {
+        tRobust: document.getElementById("tRobust").checked,
+        tConformal: document.getElementById("tConformal").checked,
+        tMartingale: document.getElementById("tMartingale").checked,
+        tBOCD: document.getElementById("tBOCD").checked
+      },
+      audio: {
+        monitor: document.getElementById("chkMonitor").checked,
+        monitorGain: parseFloat(document.getElementById("rngMonitor").value),
+        aec: document.getElementById("chkAEC").checked,
+        ns: document.getElementById("chkNS").checked,
+        agc: document.getElementById("chkAGC").checked
+      }
     }
   };
   
-  // --- UI EVENTS ---
-  tSchumann.addEventListener("change", ()=> engine.toggleSchumann(tSchumann.checked));
+  const textarea = document.getElementById("configTextArea");
+  const status = document.getElementById("configStatus");
+  textarea.value = JSON.stringify(config, null, 2);
+  textarea.style.display = "block";
+  status.textContent = "✅ Configuration exported! Copy the JSON above.";
+  status.className = "goodBox";
+  status.style.display = "block";
   
-  function applyPreset(name){
-     const p = PRESETS[name];
-     alpha.value = p.alpha;
-     tSchumann.checked = p.schumann;
-     tEntropy.checked = p.entropy;
-     tRobust.checked = p.robust;
-     tConformal.checked = p.conformal;
-     tMartingale.checked = p.mart;
-     
-     engine.toggleSchumann(p.schumann);
-     
-     document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
-     $(`btnPreset${name.charAt(0).toUpperCase() + name.slice(1)}`)?.classList.add("active");
-     log(`Preset: ${name}`, "info");
-  }
+  log("Configuration exported successfully", "good");
+}
 
-  // --- DRAW LOOP ---
-  function draw(){
-    requestAnimationFrame(draw);
-    if(!engine.uiData) return;
-    const { m2, p, entropy, mart, isAnom, isOrdered, buf } = engine.uiData;
+// Import configuration
+function importConfig() {
+  const textarea = document.getElementById("configTextArea");
+  const status = document.getElementById("configStatus");
+  
+  try {
+    const config = JSON.parse(textarea.value);
     
-    const ctx = cWave.getContext("2d");
-    const W=cWave.width, H=cWave.height;
-    ctx.clearRect(0,0,W,H);
-    ctx.lineWidth=2;
+    if (!config.settings) {
+      throw new Error("Invalid configuration format");
+    }
     
-    if(isAnom) ctx.strokeStyle = "#FF4D6D"; 
-    else if(isOrdered) ctx.strokeStyle = "#00D4FF"; 
-    else ctx.strokeStyle = "#7C5CFF"; 
+    // Apply settings
+    document.getElementById("alpha").value = config.settings.alpha;
+    document.getElementById("alphaN").value = config.settings.alpha;
+    document.getElementById("rcut").value = config.settings.rcut;
+    document.getElementById("rcutN").value = config.settings.rcut;
+    document.getElementById("frameMs").value = config.settings.frameMs;
+    document.getElementById("frameMsN").value = config.settings.frameMs;
+    document.getElementById("win").value = config.settings.win;
+    document.getElementById("winN").value = config.settings.win;
+    document.getElementById("cwin").value = config.settings.cwin;
+    document.getElementById("cwinN").value = config.settings.cwin;
     
-    ctx.beginPath();
-    const step = Math.ceil(buf.length/W);
-    for(let i=0;i<W;i++) ctx.lineTo(i, (buf[i*step]*0.5+0.5)*H);
-    ctx.stroke();
+    // Apply features
+    Object.keys(config.settings.features).forEach(key => {
+      const el = document.getElementById(key);
+      if (el) el.checked = config.settings.features[key];
+    });
     
-    const mCtx = cMeters.getContext("2d");
-    mCtx.clearRect(0,0,800,420);
+    // Apply modalities
+    Object.keys(config.settings.modalities).forEach(key => {
+      const el = document.getElementById(key);
+      if (el) el.checked = config.settings.modalities[key];
+    });
     
-    const drawGauge = (x,y,v,max,lbl,col) => {
-        mCtx.strokeStyle="#333"; mCtx.lineWidth=10; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,0); mCtx.stroke();
-        mCtx.strokeStyle=col; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,Math.PI+Math.min(1,v/max)*Math.PI); mCtx.stroke();
-        mCtx.fillStyle="#FFF"; mCtx.fillText(v.toFixed(2),x-15,y-10); mCtx.fillText(lbl,x-20,y+20);
-    };
+    // Apply audio settings if present
+    if (config.settings.audio) {
+      document.getElementById("chkMonitor").checked = config.settings.audio.monitor;
+      document.getElementById("rngMonitor").value = config.settings.audio.monitorGain;
+      document.getElementById("chkAEC").checked = config.settings.audio.aec;
+      document.getElementById("chkNS").checked = config.settings.audio.ns;
+      document.getElementById("chkAGC").checked = config.settings.audio.agc;
+    }
     
-    drawGauge(150,100,m2,20,"m² Score", isAnom?"#FF4D6D":"#2EE6A6");
-    drawGauge(400,100,p,1,"p-value", isAnom?"#FF4D6D":"#2EE6A6");
-    drawGauge(650,100,entropy,1,"Entropy", isOrdered?"#00D4FF":"#7C5CFF");
-    drawGauge(150,300,mart,10,"Evidence", "#7C5CFF");
+    status.textContent = "✅ Configuration imported successfully!";
+    status.className = "goodBox";
+    status.style.display = "block";
+    textarea.style.display = "none";
     
-    kM2.textContent = m2.toFixed(2);
-    kP.textContent = p.toFixed(4);
-    kE.textContent = mart.toFixed(1);
+    if (config.preset && PRESETS[config.preset]) {
+      currentPreset = config.preset;
+      document.querySelectorAll(".preset-btn").forEach(btn => btn.classList.remove("active"));
+      const activeBtn = document.querySelector(`[data-preset="${config.preset}"]`);
+      if (activeBtn) activeBtn.classList.add("active");
+    }
     
-    if(isOrdered) setPill(pillAnom, "ORDER DETECTED", "order");
-    else if(isAnom) setPill(pillAnom, "ANOMALY", "bad");
-    else setPill(pillAnom, "Scanning...", "good");
+    log("Configuration imported successfully", "good");
+    
+  } catch (e) {
+    status.textContent = `❌ Import failed: ${e.message}`;
+    status.className = "badBox";
+    status.style.display = "block";
+    log(`Import failed: ${e.message}`, "bad");
   }
-  requestAnimationFrame(draw);
-  
-  btnStart.onclick = () => engine.start();
-  btnStop.onclick = () => engine.stop();
-  btnCal.onclick = () => engine.calibrate();
-  rngMonitor.oninput = () => { if(engine.gain) engine.gain.gain.value = chkMonitor.checked?rngMonitor.value:0; };
-  chkMonitor.onchange = rngMonitor.oninput;
-  
-  $("btnPresetScientific").onclick = () => applyPreset("scientific");
-  $("btnPresetPsi").onclick = () => applyPreset("psi");
-  $("btnPresetHybrid").onclick = () => applyPreset("hybrid");
-  $("btnPresetEVP").onclick = () => applyPreset("evp");
+}
 
-  if(isSecureCtx()) setPill($("pillCtx"), "Context: Secure", "good");
-})();
+// Snapshot current state with anomaly data
+function takeSnapshot() {
+  const snapshot = {
+    timestamp: new Date().toISOString(),
+    preset: currentPreset,
+    anomalyEvents: anomalyEventLog.slice(-20), // Last 20 events
+    currentState: {
+      running: true, // simplified
+    }
+  };
+  
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `itc-snapshot-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  log(`Snapshot saved with ${anomalyEventLog.length} events`, "good");
+}
+
+
+// Wire up preset buttons
+document.querySelectorAll(".preset-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    applyPreset(btn.dataset.preset);
+  });
+});
+
+// Wire up export/import buttons
+document.getElementById("btnExportConfig").addEventListener("click", exportConfig);
+document.getElementById("btnImportConfig").addEventListener("click", () => {
+  const textarea = document.getElementById("configTextArea");
+  const status = document.getElementById("configStatus");
+  if (textarea.style.display === "none") {
+    textarea.style.display = "block";
+    textarea.placeholder = "Paste your configuration JSON here...";
+    status.style.display = "none";
+  } else {
+    importConfig();
+  }
+});
+
+document.getElementById("btnSnapshot").addEventListener("click", takeSnapshot);
+document.getElementById("btnClearEvents").addEventListener("click", () => {
+  anomalyEventLog = [];
+  log("Event log cleared", "info");
+});
+
+// Apply default preset on load
+setTimeout(() => {
+  applyPreset("balanced");
+}, 500);
+
+// ========== END PRESET SYSTEM ==========
+
 </script>
 </body>
 </html>
