@@ -21,7 +21,7 @@
 ---
 
 ## 📋 Executive Summary
-**The American Paranormal ITC Suite** represents the next generation of environmental anomaly detection. engineered for serious investigators and researchers. Unlike consumer-grade "ghost boxes" that rely on random radio sweeps, this platform utilizes **AudioWorklet** technology and proprietary statistical algorithms to analyze environmental audio in real-time.
+**The American Paranormal ITC Suite** represents the next generation of environmental anomaly detection, engineered for serious investigators and researchers. Unlike consumer-grade "ghost boxes" that rely on random radio sweeps, this platform utilizes **AudioWorklet** technology and proprietary statistical algorithms to analyze environmental audio in real-time.
 
 This software serves as the official digital companion to the book **"The American Paranormal,"** providing readers with the rigorous tools necessary to validate environmental shifts, entropy fluctuations, and potential transcommunication events.
 
@@ -87,6 +87,6 @@ This suite is a **Progressive Web Application (PWA)** hosted via GitHub Pages.
 ---
 
 <div align="center">
-  <p>© 2024 The American Paranormal Project. All Rights Reserved.</p>
+  <p>© 2025 The American Paranormal Project. All Rights Reserved.</p>
   <p><i>Developed by skdietrich.</i></p>
 </div>
