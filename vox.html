@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOX v1.0 | Digital Medium</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-dark: #080808;
+    --text-main: #e0e0e0;
+    --accent: #FF4D6D; /* Crimson Red for VOX (Danger/Alert) */
+    --border: #333;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* Atmosphere */
+  .bg-glow {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 30%, rgba(255, 77, 109, 0.05) 0%, #080808 80%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Header */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    color: #fff;
+    letter-spacing: 5px;
+    margin: 0 0 10px 0;
+    text-shadow: 0 0 20px rgba(255, 77, 109, 0.4);
+  }
+
+  .status-line {
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: #333;
+    border-radius: 50%;
+  }
+  .status-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  /* Word Display (The Main Event) */
+  .word-stage {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .current-word {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.2s ease-out;
+  }
+  
+  .current-word.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* History Log */
+  .history-log {
+    width: 300px;
+    height: 150px;
+    border-top: 1px solid #222;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column-reverse; /* Newest at bottom */
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    mask-image: linear-gradient(to top, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 50%, transparent 100%);
+  }
+
+  .log-item {
+    padding: 5px 0;
+    opacity: 0.6;
+  }
+  .log-item:first-child {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  /* Controls */
+  .btn-main {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 15px 40px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 20px;
+  }
+
+  .btn-main:hover {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 30px rgba(255, 77, 109, 0.4);
+  }
+  
+  .return-link {
+    margin-top: 50px;
+    font-size: 0.7rem;
+    color: #444;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .return-link:hover { color: #fff; }
+
+  @keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+  }
+  
+  /* Voice Selector (Hidden by default, shown if needed) */
+  #voiceSelect {
+    background: #111;
+    color: #888;
+    border: 1px solid #333;
+    padding: 5px;
+    margin-top: 10px;
+    font-family: sans-serif;
+    font-size: 0.7rem;
+    display: none; /* Auto-selects best voice, but can be enabled */
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<h1>VOX v1.0</h1>
+<div class="status-line">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="statusText">SYSTEM STANDBY</span>
+</div>
+
+<div class="word-stage">
+  <div class="current-word" id="displayWord"></div>
+</div>
+
+<div class="history-log" id="log">
+  </div>
+
+<button class="btn-main" onclick="toggleSession()" id="pwrBtn">INITIATE SCAN</button>
+
+<select id="voiceSelect"></select> <a href="index.html" class="return-link">Return to Portal</a>
+
+<script>
+  // --- CONFIGURATION ---
+  const dictionary = [
+    "BELOW", "WATER", "HELP", "DARK", "LIGHT", "RUN", "WAIT", "LISTEN", 
+    "COLD", "BURNING", "TIME", "LOST", "MOTHER", "FATHER", "CHILD", "SEE", 
+    "LOOK", "BEHIND", "UP", "DOWN", "CROSS", "CIRCLE", "STONE", "WOOD", 
+    "FIRE", "ASH", "BONE", "SKIN", "OPEN", "CLOSE", "LEAVE", "STAY", 
+    "NEAR", "FAR", "HURT", "PEACE", "WAR", "SAD", "ANGRY", "HUNGRY", 
+    "SEARCH", "FOUND", "NAME", "NUMBER", "DEAD", "ALIVE", "BREATHE", 
+    "CHOKE", "FALL", "RISE", "SKY", "DIRT", "DIG", "HIDE", "SEEK", 
+    "UNKNOWN", "SHADOW", "MIRROR", "GLASS", "BREAK", "FIX", "TOGETHER", 
+    "ALONE", "MANY", "FEW", "WHO", "WHY", "WHEN", "WHERE", "HOW",
+    "ENERGY", "STATIC", "NOISE", "SILENCE", "LOUD", "WHISPER", "SCREAM"
+  ];
+
+  let isRunning = false;
+  let audioContext, analyser, microphone;
+  let entropyHistory = [];
+  const triggerThreshold = 30; // Sensitivity (Higher = Harder to trigger)
+  let cooldown = false;
+
+  // --- VOICE ENGINE ---
+  let synth = window.speechSynthesis;
+  let selectedVoice = null;
+
+  function loadVoices() {
+    let voices = synth.getVoices();
+    // Priority: Look for "Google" or "Natural" voices which sound better
+    // We prefer a deeper male voice if possible for the 'spooky' effect
+    
+    // 1. Try to find Google US English (Usually high quality)
+    selectedVoice = voices.find(v => v.name.includes("Google US English"));
+    
+    // 2. If not, try Microsoft Zira or David (Windows)
+    if (!selectedVoice) selectedVoice = voices.find(v => v.name.includes("Zira"));
+    if (!selectedVoice) selectedVoice = voices.find(v => v.name.includes("David"));
+    
+    // 3. If not, try Apple Samantha or Daniel (Mac)
+    if (!selectedVoice) selectedVoice = voices.find(v => v.name.includes("Daniel"));
+    
+    // 4. Fallback to first English voice
+    if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith("en"));
+  }
+
+  // Chrome loads voices asynchronously
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function speak(text) {
+    if (!synth) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    if (selectedVoice) utter.voice = selectedVoice;
+    
+    // GHOST MODULATION
+    // We slow it down and lower pitch to hide robotic artifacts
+    utter.pitch = 0.6; // Deep
+    utter.rate = 0.8;  // Slow/Deliberate
+    utter.volume = 1.0;
+
+    synth.speak(utter);
+  }
+
+  // --- MAIN LOOP ---
+  async function toggleSession() {
+    const btn = document.getElementById('pwrBtn');
+    const dot = document.getElementById('statusDot');
+    const status = document.getElementById('statusText');
+
+    if (!isRunning) {
+      // START
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        analyser.fftSize = 256;
+        
+        isRunning = true;
+        btn.innerText = "TERMINATE SESSION";
+        btn.style.borderColor = "#444";
+        dot.classList.add('active');
+        status.innerText = "LISTENING TO ENVIRONMENT...";
+        loadVoices(); // Ensure voice is ready
+        scanLoop();
+      } catch (e) {
+        alert("Microphone access required for Entropy detection.");
+      }
+    } else {
+      // STOP
+      isRunning = false;
+      if (audioContext) audioContext.close();
+      btn.innerText = "INITIATE SCAN";
+      btn.style.borderColor = "var(--accent)";
+      dot.classList.remove('active');
+      status.innerText = "SYSTEM STANDBY";
+    }
+  }
+
+  function scanLoop() {
+    if (!isRunning) return;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(dataArray);
+
+    // Calculate average volume (Entropy Level)
+    let sum = 0;
+    for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+    let average = sum / dataArray.length;
+
+    // Trigger Logic: If volume spikes or changes rapidly
+    // (Simulating Ovilus 'environmental change' detection)
+    if (average > 10 && !cooldown) {
+      // Add randomness check to prevent constant triggering in noisy rooms
+      if (Math.random() > 0.98) { 
+        triggerWord();
+      }
+    }
+
+    requestAnimationFrame(scanLoop);
+  }
+
+  function triggerWord() {
+    cooldown = true;
+    
+    // Pick random word
+    const word = dictionary[Math.floor(Math.random() * dictionary.length)];
+    
+    // 1. Display
+    const display = document.getElementById('displayWord');
+    display.innerText = word;
+    display.classList.remove('visible');
+    void display.offsetWidth; // Trigger reflow for animation
+    display.classList.add('visible');
+
+    // 2. Speak
+    speak(word);
+
+    // 3. Log
+    const log = document.getElementById('log');
+    const entry = document.createElement('div');
+    entry.className = 'log-item';
+    entry.innerText = `> ${word}`;
+    log.prepend(entry); // Add to top
+
+    // Cooldown reset (2-4 seconds random delay)
+    setTimeout(() => { cooldown = false; }, 2000 + Math.random() * 2000);
+  }
+
+</script>
+
+</body>
+</html>
