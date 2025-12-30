@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The American Paranormal | ITC System Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #080a10;
+    --accent-purple: #7C5CFF;
+    --accent-cyan: #00D4FF;
+    --accent-red: #FF4D6D;
+  }
+  body {
+    margin: 0;
+    background-color: var(--bg-dark);
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(124, 92, 255, 0.2) 0%, transparent 60%);
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+  /* CRT Scanline Effect */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  .container {
+    max-width: 1000px;
+    width: 90%;
+    margin: 40px auto;
+    z-index: 20;
+    text-align: center;
+  }
+
+  /* Header Styles */
+  .logo-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 20%;
+    box-shadow: 0 0 50px rgba(124, 92, 255, 0.4);
+    margin-bottom: 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    background: linear-gradient(to bottom, #fff, #999);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sub {
+    color: var(--accent-cyan);
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    margin-bottom: 50px;
+    text-transform: uppercase;
+  }
+
+  /* Grid Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    padding-bottom: 50px;
+  }
+
+  /* The Cards */
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 30px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 200px;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .card h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    margin: 0 0 10px 0;
+  }
+  .card p {
+    color: #8F9BB3;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+  
+  /* Status Badges */
+  .badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    background: rgba(255,255,255,0.1);
+    width: fit-content;
+  }
+
+  /* Card Colors */
+  .ult { border-top: 4px solid var(--accent-purple); }
+  .ult .badge { color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+  
+  .psi { border-top: 4px solid var(--accent-cyan); }
+  .psi .badge { color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+  
+  .max { border-top: 4px solid var(--accent-red); }
+  .max .badge { color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+  footer {
+    color: rgba(255,255,255,0.2);
+    font-size: 0.8rem;
+    padding-bottom: 30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <img src="logo.png" alt="Logo" class="logo-img">
+  
+  <h1>The American<br>Paranormal</h1>
+  <div class="sub">Advanced ITC Anomaly Lab</div>
+
+  <div class="grid">
+    
+    <a href="ultimate.html" class="card ult">
+      <div class="badge">Flagship</div>
+      <div>
+        <h2>v3.3 Ultimate</h2>
+        <p>Hybrid Engine. Robust statistical analysis combined with active Psi-entrainment.</p>
+      </div>
+    </a>
+
+    <a href="psi.html" class="card psi">
+      <div class="badge">Experimental</div>
+      <div>
+        <h2>v3.2 Psi-Enhanced</h2>
+        <p>Resonance Engine. High-sensitivity entropy listener with 7.83Hz carrier.</p>
+      </div>
+    </a>
+
+    <a href="max.html" class="card max">
+      <div class="badge">Validation</div>
+      <div>
+        <h2>v2.6 MAX</h2>
+        <p>Scientific Engine. Rigorous conformal prediction to eliminate false positives.</p>
+      </div>
+    </a>
+
+  </div>
+
+  <footer>
+    SECURE CONTEXT REQUIRED // MICROPHONE ACCESS MANDATORY<br>
+    &copy; 2025 The American Paranormal Project
+  </footer>
+</div>
+
+</body>
+</html>
