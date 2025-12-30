@@ -4,37 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>The American Paranormal | Advanced ITC Software Suite</title>
-<meta name="description" content="Free browser-based ITC anomaly detection software. The official companion to 'The American Paranormal' book. Features Schumann Resonance entrainment, Inverse Entropy EVP detection, and statistical ghost hunting tools.">
-<meta name="keywords" content="ITC software, ghost box, EVP recorder, paranormal investigation, Schumann resonance, entropy detection, American Paranormal book, skdietrich, spirit box online">
+<title>The American Paranormal | Advanced ITC Software</title>
+<meta name="description" content="Official ITC anomaly detection suite. Real-time entropy monitoring and statistical ghost hunting tools. Companion to the book 'The American Paranormal'.">
+<meta name="keywords" content="ITC software, ghost box, EVP, paranormal, entropy, skdietrich">
 <meta name="author" content="skdietrich">
-<meta name="robots" content="index, follow">
-
-<meta property="og:title" content="The American Paranormal | ITC Lab">
-<meta property="og:description" content="Advanced real-time environmental anomaly detection. Launch the Ultimate, Psi, and MAX engines directly in your browser.">
-<meta property="og:image" content="https://skdietrich.github.io/The-American-Paranormal/logo.png">
-<meta property="og:url" content="https://skdietrich.github.io/The-American-Paranormal/">
-<meta property="og:type" content="website">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "The American Paranormal ITC Suite",
-  "operatingSystem": "Browser",
-  "applicationCategory": "UtilityApplication",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "author": {
-    "@type": "Person",
-    "name": "skdietrich"
-  },
-  "description": "Advanced ITC anomaly detection suite using AudioWorklet technology for real-time statistical analysis and entropy monitoring."
-}
-</script>
 
 <style>
   body {
@@ -61,33 +34,36 @@
     pointer-events: none;
   }
 
-  /* Logo & Title */
+  /* Logo */
   .logo {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     border-radius: 20%;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    object-fit: cover;
   }
+  
   h1 {
     font-weight: 300;
-    letter-spacing: 6px;
+    letter-spacing: 8px;
     text-transform: uppercase;
-    font-size: 1.8rem;
-    margin: 0 0 40px 0;
+    font-size: 1.6rem;
+    margin: 0 0 50px 0;
     color: #ccc;
   }
 
-  /* The Grid */
+  /* App Grid */
   .grid {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
     justify-content: center;
     max-width: 900px;
+    margin-bottom: 80px;
   }
 
-  /* Minimalist Cards */
   a.card {
     background: #111;
     border: 1px solid #333;
@@ -110,30 +86,40 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     color: #666;
-    margin-bottom: 10px;
     display: block;
+    margin-bottom: 10px;
   }
   
-  h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 400;
+  h2 { margin: 0; font-size: 1.2rem; font-weight: 400; }
+
+  /* FANCY AUTHOR BUTTON */
+  .author-btn {
+    text-decoration: none;
+    color: #888;
+    border: 1px solid #333;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.02);
+    position: relative;
+    overflow: hidden;
   }
-  
-  /* Footer */
-  .footer {
-    margin-top: 80px;
-    font-size: 0.75rem;
+
+  .author-btn:hover {
+    color: #fff;
+    border-color: #7C5CFF;
+    box-shadow: 0 0 20px rgba(124, 92, 255, 0.4);
+    background: rgba(124, 92, 255, 0.1);
+  }
+
+  .footer-note {
+    margin-top: 20px;
+    font-size: 0.6rem;
     color: #444;
     letter-spacing: 1px;
-    padding-bottom: 40px;
-  }
-  
-  /* Button Hover Effect */
-  .footer a:hover {
-    background: #222;
-    border-color: #7C5CFF !important;
-    color: #fff !important;
   }
 </style>
 </head>
@@ -141,7 +127,7 @@
 
 <div class="glow"></div>
 
-<img src="logo.png" alt="Logo" class="logo">
+<img src="logo.png" alt="System Logo" class="logo">
 
 <h1>The American Paranormal</h1>
 
@@ -162,14 +148,11 @@
   </a>
 </div>
 
-<div class="footer">
-  SECURE SYSTEM // MICROPHONE REQUIRED
-  <br><br><br>
-  
-  <a href="https://skdietrich.github.io/books/" style="color: #666; text-decoration: none; border: 1px solid #333; padding: 12px 25px; border-radius: 30px; font-size: 0.7rem; transition: 0.3s; letter-spacing: 2px; text-transform: uppercase;">
-    &larr; Return to Author Library
-  </a>
-</div>
+<a href="https://skdietrich.github.io/books/" class="author-btn">
+  &larr; Return to Author Library
+</a>
+
+<div class="footer-note">SECURE CONTEXT // MICROPHONE REQUIRED</div>
 
 </body>
 </html>
