@@ -18,7 +18,7 @@
   :root {
     --bg-dark: #080808;
     --text-main: #e0e0e0;
-    --accent: #7C5CFF; /* The Purple from your book site */
+    --accent: #7C5CFF; 
     --border: #333;
   }
 
@@ -33,9 +33,10 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 20px;
   }
 
-  /* Deep Space Atmosphere */
+  /* Background Atmosphere */
   .bg-glow {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -44,38 +45,22 @@
     pointer-events: none;
   }
 
-  /* Logo Styling */
+  /* MAIN BANNER LOGO */
   .logo {
-    width: 140px;
-    height: 140px;
-    /* Square with slight rounding, like a book cover or icon */
-    border-radius: 12px; 
-    margin-bottom: 30px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    border: 1px solid var(--border);
-    object-fit: cover;
+    width: 100%;
+    max-width: 850px;     /* Wide format for your new image */
+    height: auto;
+    margin-bottom: 40px;
+    
+    /* Clean look - no borders or effects on the image itself */
+    border: none;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5); /* Deep shadow for depth */
+    border-radius: 4px;
   }
 
-  /* Typography - Matching the Books Site */
+  /* Hidden H1 (For SEO only, since text is in the image) */
   h1 {
-    font-family: 'Cinzel', serif;
-    font-weight: 400;
-    font-size: 2.2rem;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin: 0 0 10px 0;
-    color: #fff;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 20px;
-    display: inline-block;
-  }
-
-  .subtitle {
-    font-size: 1rem;
-    color: #888;
-    margin-bottom: 60px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
+    display: none; 
   }
 
   /* App Grid */
@@ -84,13 +69,13 @@
     gap: 25px;
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 900px;
-    margin-bottom: 80px;
+    max-width: 1000px;
+    margin-bottom: 60px;
   }
 
   /* Card / Button Styling */
   a.card {
-    background: rgba(255,255,255,0.02);
+    background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
     padding: 25px;
     width: 220px;
@@ -101,11 +86,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    border-radius: 4px;
   }
   
   a.card:hover {
     border-color: var(--accent);
-    background: rgba(124, 92, 255, 0.05);
+    background: rgba(124, 92, 255, 0.08);
     transform: translateY(-5px);
     box-shadow: 0 0 30px rgba(124, 92, 255, 0.15);
   }
@@ -114,7 +100,7 @@
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #666; /* Muted tech color */
+    color: #888;
     margin-bottom: 12px;
   }
   
@@ -124,31 +110,33 @@
     font-size: 1.4rem;
     font-weight: 600;
     letter-spacing: 1px;
+    color: #fff;
   }
 
-  /* The "Return" Button - Matching your Book Buttons */
+  /* The "Return" Button - Matching your Book Site */
   .author-btn {
     text-decoration: none;
-    color: #fff;
-    border: 1px solid var(--accent);
-    padding: 15px 40px;
-    border-radius: 4px; /* Sharp corners like the book site */
+    color: #ccc;
+    border: 1px solid #444;
+    padding: 15px 50px;
+    border-radius: 2px;
     font-size: 0.85rem;
     letter-spacing: 3px;
     text-transform: uppercase;
     transition: all 0.3s ease;
     background: transparent;
-    box-shadow: 0 0 15px rgba(124, 92, 255, 0.1);
+    font-family: 'Cinzel', serif; /* Fancy font for the button */
   }
 
   .author-btn:hover {
-    background: var(--accent);
-    box-shadow: 0 0 30px rgba(124, 92, 255, 0.4);
+    border-color: var(--accent);
     color: #fff;
+    box-shadow: 0 0 25px rgba(124, 92, 255, 0.2);
+    background: rgba(124, 92, 255, 0.05);
   }
 
   .footer-note {
-    margin-top: 30px;
+    margin-top: 40px;
     font-size: 0.6rem;
     color: #444;
     letter-spacing: 2px;
@@ -160,10 +148,9 @@
 
 <div class="bg-glow"></div>
 
-<img src="logo.png" alt="System Logo" class="logo">
+<img src="logo.png" alt="The American Paranormal - Technology, Spiritualism, and the Search for Proof of Life After Death" class="logo">
 
 <h1>The American Paranormal</h1>
-<div class="subtitle">Advanced ITC Anomaly Lab</div>
 
 <div class="grid">
   <a href="ultimate.html" class="card">
