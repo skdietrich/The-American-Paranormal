@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ITC Anomaly Lab — v3.3 Ultimate</title>
+<style>
+  :root{
+    --bg:#070A12;
+    --panel:#0C1324;
+    --text:#E6ECFF;
+    --muted:#9AA6D6;
+    --accent:#7C5CFF;
+    --bad:#FF4D6D; /* Red: High Energy */
+    --good:#2EE6A6; /* Green: Normal */
+    --order:#00D4FF; /* Cyan: Low Entropy/Order */
+    --warn:#FFCF5C;
+    --shadow: 0 18px 40px rgba(0,0,0,.45);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(1200px 800px at 20% 10%, rgba(124,92,255,.22), transparent 60%),
+                radial-gradient(900px 600px at 80% 20%, rgba(0,212,255,.15), transparent 55%),
+                var(--bg);
+    color:var(--text);
+  }
+  header{ padding:18px; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .logo{
+    width:42px;height:42px;border-radius:14px;
+    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(0,212,255,.85));
+    box-shadow: 0 14px 30px rgba(124,92,255,.18);
+  }
+  h1{margin:0;font-size:16px;letter-spacing:.3px}
+  .sub{margin:2px 0 0 0;color:var(--muted);font-size:12px}
+  .topbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  
+  button{
+    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65));
+    color:white; border:0; padding:10px 12px; border-radius:12px;
+    box-shadow: 0 10px 20px rgba(124,92,255,.20); cursor:pointer;
+    font: inherit; transition: transform .05s ease, filter .2s ease;
+  }
+  button:active{transform: translateY(1px)}
+  button.secondary{ background: rgba(255,255,255,.06); box-shadow:none; border:1px solid rgba(255,255,255,.10); }
+  button:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.6)}
+  
+  main{ padding: 10px 18px 40px 18px; display:grid; grid-template-columns: 360px 1fr; gap:14px; }
+  @media (max-width: 1040px){ main{grid-template-columns: 1fr} }
+  
+  .card{
+    background: linear-gradient(180deg, rgba(12,19,36,.86), rgba(9,14,28,.86));
+    border:1px solid rgba(255,255,255,.09); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden; margin-bottom: 14px;
+  }
+  .card h2{
+    margin:0; font-size:13px; padding:12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .card .content{padding:12px}
+  
+  .kpiRow{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+  .kpi{ background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; }
+  .kpi .v{font-size:18px;margin-top:4px}
+  .kpi .t{font-size:11px;color:var(--muted)}
+  
+  .pill{ padding:3px 8px; border-radius:999px; font-size:11px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--muted); }
+  .pill.good{ color: var(--good); border-color: rgba(46,230,166,.3); background: rgba(46,230,166,.1); }
+  .pill.bad{ color: var(--bad); border-color: rgba(255,77,109,.3); background: rgba(255,77,109,.1); }
+  .pill.warn{ color: var(--warn); border-color: rgba(255,207,92,.3); background: rgba(255,207,92,.1); }
+  .pill.order{ color: var(--order); border-color: rgba(0,212,255,.3); background: rgba(0,212,255,.1); font-weight:bold; text-shadow: 0 0 10px rgba(0,212,255,.4); }
+
+  .control{ background: rgba(0,0,0,.14); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; margin-bottom: 10px; }
+  .control.psi { border:1px solid rgba(0,212,255,.2); background:rgba(0,212,255,.04); }
+  
+  .toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius: 12px; background: rgba(255,255,255,.03); margin-bottom: 6px;}
+  .slider{ display:grid; grid-template-columns: 1fr 100px; gap:10px; align-items:center; margin-bottom: 8px; }
+  input, select{ width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:white; padding:8px; border-radius:8px; }
+
+  canvas{ width:100%; display:block; background: #000; border-top:1px solid rgba(255,255,255,.08); }
+  .bigCanvas{height: 240px}
+
+  .preset-btn{ text-align: left; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .preset-btn:hover{ filter: brightness(1.2); }
+  .preset-btn.active{ background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65)); border-color: rgba(124,92,255,.8); }
+  
+  .log{ max-height: 180px; overflow-y:auto; font-family: monospace; font-size:11px; padding:10px; color: var(--muted); }
+  .log .item{ border-bottom:1px dashed rgba(255,255,255,.05); padding:4px 0; }
+  
+  .warnBox{ background: rgba(255,207,92,.1); color: var(--warn); padding:10px; border-radius:8px; font-size:12px; margin-bottom:10px; display:none; }
+  
+  @keyframes pulse { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
+  .active-effect { color: var(--order); animation: pulse 2s infinite; font-weight:bold; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <div>
+      <h1>ITC Anomaly Lab</h1>
+      <div class="sub">v3.3 Ultimate • Conformal + Robust + Psi Modules</div>
+    </div>
+  </div>
+  <div class="topbar">
+    <button id="btnStart">Start System</button>
+    <button id="btnStop" class="secondary" disabled>Stop</button>
+    <button id="btnCal" class="secondary" disabled>Calibrate (10s)</button>
+    <span id="pillCtx" class="pill">Context: unknown</span>
+    <span id="pillRun" class="pill">Idle</span>
+  </div>
+</header>
+
+<main>
+  <section>
+    
+    <div class="card">
+      <h2>⚡ Quick Presets</h2>
+      <div class="content">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+          <button id="btnPresetScientific" class="preset-btn secondary active" data-preset="scientific">
+            <b>🔬 Scientific</b><div style="font-size:10px;opacity:.7">Standard Detection</div>
+          </button>
+          <button id="btnPresetPsi" class="preset-btn secondary" data-preset="psi">
+            <b>🔮 Psi Mode</b><div style="font-size:10px;opacity:.7">Schumann + Entropy</div>
+          </button>
+          <button id="btnPresetHybrid" class="preset-btn secondary" data-preset="hybrid">
+            <b>💠 Hybrid</b><div style="font-size:10px;opacity:.7">Everything On</div>
+          </button>
+          <button id="btnPresetEVP" class="preset-btn secondary" data-preset="evp">
+            <b>👻 EVP</b><div style="font-size:10px;opacity:.7">Voice Focused</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span>Controls</span> <span class="pill" id="pillEngine">Engine: —</span></h2>
+      <div class="content">
+        <div id="ctxWarn" class="warnBox"><b>Mic blocked?</b> Use localhost or HTTPS.</div>
+
+        <div class="control psi">
+          <div style="font-size:12px; font-weight:700; color:var(--order); margin-bottom:8px; display:flex; justify-content:space-between;">
+             <span>PSI MODULES</span>
+             <span id="schumannStatus" style="font-weight:400; opacity:0">ACTIVE</span>
+          </div>
+          
+          <div class="toggle">
+            <div><b style="font-size:12px; color:#fff">Schumann (7.83Hz)</b><div style="font-size:10px;color:var(--muted)">Isochronic Carrier</div></div>
+            <input id="tSchumann" type="checkbox" style="width:auto">
+          </div>
+          <div class="toggle">
+            <div><b style="font-size:12px; color:#fff">Inverse Entropy</b><div style="font-size:10px;color:var(--muted)">Detects Order/Structure</div></div>
+            <input id="tEntropy" type="checkbox" style="width:auto">
+          </div>
+        </div>
+        
+        <div class="control">
+           <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:8px;">MATH MODULES</div>
+          <div class="toggle">
+            <div><b style="font-size:12px">Robust Scoring</b><div style="font-size:10px;color:var(--muted)">Mahalanobis m²</div></div>
+            <input id="tRobust" type="checkbox" checked style="width:auto">
+          </div>
+          <div class="toggle">
+            <div><b style="font-size:12px">Conformal p-values</b><div style="font-size:10px;color:var(--muted)">Rigorous Rarity</div></div>
+            <input id="tConformal" type="checkbox" checked style="width:auto">
+          </div>
+          <div class="toggle">
+             <div><b style="font-size:12px">Evidence</b><div style="font-size:10px;color:var(--muted)">Sequential Martingale</div></div>
+             <input id="tMartingale" type="checkbox" checked style="width:auto">
+          </div>
+        </div>
+
+        <div class="control">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+            <input type="checkbox" id="chkMonitor" style="width:auto"> <span>Monitor Audio</span>
+          </div>
+          <div class="slider">
+            <span style="font-size:12px;color:var(--muted)">Gain</span>
+            <input id="rngMonitor" type="range" min="0" max="1" step="0.01" value="0"/>
+          </div>
+        </div>
+
+        <div class="control">
+          <div class="slider">
+            <div style="font-size:12px">Sensitivity (Alpha)</div>
+            <input id="alpha" type="range" min="0.0005" max="0.05" step="0.0005" value="0.01"/>
+          </div>
+        </div>
+        
+        <div style="display:none">
+            <input id="win" value="240"><input id="cwin" value="300">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2><span>Visuals</span> <span class="pill" id="pillFPS">FPS: —</span></h2>
+      <canvas id="cWave" class="bigCanvas" width="1000" height="240"></canvas>
+      <canvas id="cSpec" width="1000" height="150" style="height:150px"></canvas>
+    </div>
+
+    <div class="card">
+      <h2><span>Analysis</span> <span class="pill" id="pillAnom">Normal</span></h2>
+      <canvas id="cMeters" width="800" height="420" style="height:420px"></canvas>
+      
+      <div class="content">
+        <div class="kpiRow">
+          <div class="kpi"><div class="t">m² Score</div><div class="v" id="kM2">—</div></div>
+          <div class="kpi"><div class="t">p-value</div><div class="v" id="kP">—</div></div>
+          <div class="kpi"><div class="t">Evidence</div><div class="v" id="kE">—</div></div>
+        </div>
+        <div class="log" id="log" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  // --- PRESETS ---
+  const PRESETS = {
+    scientific: { 
+      alpha: 0.01, schumann: false, entropy: false, 
+      robust: true, conformal: true, mart: true 
+    },
+    psi: { 
+      alpha: 0.02, schumann: true, entropy: true, 
+      robust: true, conformal: false, mart: false 
+    },
+    hybrid: { 
+      alpha: 0.01, schumann: true, entropy: true, 
+      robust: true, conformal: true, mart: true 
+    },
+    evp: { 
+      alpha: 0.015, schumann: false, entropy: false, 
+      robust: true, conformal: true, mart: true 
+    }
+  };
+
+  // --- HELPERS ---
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const nowMs = () => performance.now();
+  function isSecureCtx(){
+    return (window.isSecureContext === true) || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  }
+  function setPill(el, text, cls){
+    el.textContent = text;
+    el.classList.remove("good","warn","bad","order");
+    if(cls) el.classList.add(cls);
+  }
+
+  // --- DOM ---
+  const $ = (id) => document.getElementById(id);
+  const btnStart=$("btnStart"), btnStop=$("btnStop"), btnCal=$("btnCal");
+  const pillRun=$("pillRun"), pillAnom=$("pillAnom");
+  const logEl=$("log");
+  
+  const chkMonitor=$("chkMonitor"), rngMonitor=$("rngMonitor");
+  // Psi Toggles
+  const tSchumann=$("tSchumann"), tEntropy=$("tEntropy");
+  // Math Toggles
+  const tRobust=$("tRobust"), tConformal=$("tConformal"), tMartingale=$("tMartingale");
+  
+  const alpha=$("alpha");
+  const kM2=$("kM2"), kP=$("kP"), kE=$("kE");
+  const cWave=$("cWave"), cSpec=$("cSpec"), cMeters=$("cMeters");
+
+  // --- LOGGING ---
+  function log(msg, kind="info"){
+    const div = document.createElement("div");
+    div.className = "item";
+    const ts = new Date().toLocaleTimeString().split(" ")[0];
+    div.innerHTML = `<span style="opacity:.6">[${ts}]</span> <span class="${kind==='bad'?'pill bad':(kind==='order'?'pill order':(kind==='warn'?'pill warn':''))}">${msg}</span>`;
+    logEl.prepend(div);
+    if(logEl.childNodes.length > 50) logEl.removeChild(logEl.lastChild);
+  }
+
+  // --- MATH ---
+  function mean(arr){ let s=0; for(const x of arr)s+=x; return s/arr.length; }
+  function median(v){ const a=v.slice().sort((x,y)=>x-y); const m=a.length>>1; return (a.length%2)?a[m]:0.5*(a[m-1]+a[m]); }
+  function mad(v, m){ return median(v.map(x=>Math.abs(x-m)))*1.4826; }
+  function dot(a,b){ let s=0; for(let i=0;i<a.length;i++)s+=a[i]*b[i]; return s; }
+  
+  function cholesky(A){
+    const n=A.length, L=Array.from({length:n},()=>Array(n).fill(0));
+    for(let i=0;i<n;i++){
+      for(let j=0;j<=i;j++){
+        let s=A[i][j]; for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];
+        if(i===j){ if(s<=1e-12) throw new Error("Non-PD"); L[i][j]=Math.sqrt(s); }
+        else L[i][j]=s/L[j][j];
+      }
+    }
+    return L;
+  }
+  function cholSolve(L, b){
+    const n=L.length, y=Array(n).fill(0), x=Array(n).fill(0);
+    for(let i=0;i<n;i++){ let s=b[i]; for(let k=0;k<i;k++)s-=L[i][k]*y[k]; y[i]=s/L[i][i]; }
+    for(let i=n-1;i>=0;i--){ let s=y[i]; for(let k=i+1;k<n;k++)s-=L[k][i]*x[k]; x[i]=s/L[i][i]; }
+    return x;
+  }
+
+  function robustMeanCov(X){
+    const n=X.length; if(n<5)return null;
+    const p=X[0].length;
+    const med=Array(p), scale=Array(p);
+    for(let j=0;j<p;j++){ const col=X.map(r=>r[j]); med[j]=median(col); scale[j]=mad(col,med[j])||1; }
+    const Z=X.map(r=>r.map((v,j)=>(v-med[j])/scale[j]));
+    
+    let mu=Array(p).fill(0);
+    for(const z of Z) for(let j=0;j<p;j++) mu[j]+=z[j];
+    for(let j=0;j<p;j++) mu[j]/=n;
+    
+    let S=Array.from({length:p},()=>Array(p).fill(0));
+    for(const z of Z){ for(let i=0;i<p;i++){ const d=z[i]-mu[i]; for(let j=0;j<=i;j++) S[i][j]+=d*(z[j]-mu[j]); } }
+    for(let i=0;i<p;i++) { for(let j=0;j<=i;j++){ S[i][j]/=(n-1); S[j][i]=S[i][j]; } S[i][i]+=1e-5; }
+
+    const lambda = 0.2;
+    for(let i=0;i<p;i++) for(let j=0;j<p;j++) S[i][j] = (1-lambda)*S[i][j] + (i===j?lambda:0);
+    return {med, scale, mu, S};
+  }
+
+  function mahalanobis(model, x){
+    const {med, scale, mu, S} = model;
+    const z = x.map((v,j)=>(v-med[j])/scale[j]);
+    const d = z.map((v,j)=>v-mu[j]);
+    let L; try{ L=cholesky(S); }catch(e){ return 0; }
+    return Math.max(0, dot(d, cholSolve(L,d)));
+  }
+
+  // --- ENGINE ---
+  const engine = {
+    running: false, 
+    X: [], scores: [], model: null, 
+    martingale: 0, baselineEntropy: 0,
+    
+    // Nodes
+    audio: null, source: null, analyser: null, gain: null, proc: null,
+    schOsc: null, schLFO: null, schGain: null,
+    
+    get config(){
+        return {
+            alpha: Number(alpha.value),
+            win: 240, cwin: 300,
+            schumann: tSchumann.checked,
+            invEntropy: tEntropy.checked,
+            robust: tRobust.checked,
+            conformal: tConformal.checked,
+            mart: tMartingale.checked
+        };
+    },
+    
+    async start(){
+        try {
+            if(!isSecureCtx()) throw new Error("Insecure context. Use localhost or https.");
+            this.audio = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
+            await this.audio.resume();
+            
+            const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, autoGainControl:false, noiseSuppression:false}});
+            this.source = this.audio.createMediaStreamSource(stream);
+            
+            this.analyser = this.audio.createAnalyser();
+            this.analyser.fftSize = 2048;
+            this.analyser.smoothingTimeConstant = 0.2;
+            
+            this.gain = this.audio.createGain();
+            this.gain.gain.value = chkMonitor.checked ? Number(rngMonitor.value) : 0;
+            this.source.connect(this.gain).connect(this.audio.destination);
+            
+            this.proc = this.audio.createScriptProcessor(2048, 1, 1);
+            this.proc.onaudioprocess = (e) => this.onAudio(e.inputBuffer.getChannelData(0));
+            this.source.connect(this.proc);
+            this.proc.connect(this.audio.createGain()).connect(this.audio.destination);
+            this.source.connect(this.analyser);
+            
+            this.running = true;
+            this.X=[]; this.scores=[]; this.model=null; this.martingale=0;
+            
+            if(this.config.schumann) this.toggleSchumann(true);
+            
+            setPill(pillRun, "Running", "good");
+            btnStart.disabled=true; btnStop.disabled=false; btnCal.disabled=false;
+            log("System engaged. Please calibrate.", "info");
+        } catch(e){
+            log(e.message, "bad");
+        }
+    },
+    
+    stop(){
+        this.toggleSchumann(false);
+        if(this.audio) this.audio.close();
+        this.running=false;
+        setPill(pillRun, "Stopped", "warn");
+        btnStart.disabled=false; btnStop.disabled=true; btnCal.disabled=true;
+    },
+    
+    toggleSchumann(isActive){
+        if(!this.audio) return;
+        if(this.schOsc) { try{this.schOsc.stop();}catch(e){} this.schOsc.disconnect(); this.schOsc=null; }
+        if(this.schLFO) { try{this.schLFO.stop();}catch(e){} this.schLFO.disconnect(); this.schLFO=null; }
+        if(this.schGain){ this.schGain.disconnect(); this.schGain=null; }
+        
+        if(isActive){
+            const t = this.audio.currentTime;
+            this.schGain = this.audio.createGain();
+            this.schOsc = this.audio.createOscillator();
+            this.schOsc.type = "sine"; this.schOsc.frequency.value = 110; 
+            this.schLFO = this.audio.createOscillator();
+            this.schLFO.type = "sine"; this.schLFO.frequency.value = 7.83; 
+            
+            this.schOsc.connect(this.schGain);
+            this.schGain.connect(this.audio.destination);
+            this.schGain.gain.setValueAtTime(0.08, t);
+            this.schLFO.connect(this.schGain.gain); 
+            
+            this.schOsc.start(t);
+            this.schLFO.start(t);
+            $("schumannStatus").style.opacity = 1; $("schumannStatus").classList.add("active-effect");
+            log("Schumann Resonator (7.83Hz) Active.", "order");
+        } else {
+            $("schumannStatus").style.opacity = 0; $("schumannStatus").classList.remove("active-effect");
+        }
+    },
+    
+    onAudio(buf){
+        if(!this.running) return;
+        const cfg = this.config;
+        
+        // 1. RMS
+        let sumSq=0; for(let i=0;i<buf.length;i++) sumSq+=buf[i]*buf[i];
+        const rms = Math.sqrt(sumSq/buf.length);
+        
+        // 2. FFT & Entropy
+        const freq = new Uint8Array(this.analyser.frequencyBinCount);
+        this.analyser.getByteFrequencyData(freq);
+        let specSum=0; for(let i=0;i<freq.length;i++) specSum+=freq[i];
+        let entropy = 0;
+        if(specSum > 0){
+            for(let i=0;i<freq.length;i++){
+                const prob = freq[i]/specSum;
+                if(prob>0) entropy -= prob * Math.log2(prob);
+            }
+            entropy /= Math.log2(freq.length);
+        }
+        
+        // Feat Vector
+        const feats = [rms, entropy];
+        this.X.push(feats);
+        if(this.X.length > cfg.win) this.X.shift();
+        
+        let m2 = 0, p = 1, isAnom = false, isOrdered = false;
+        
+        if(this.model && cfg.robust){
+            m2 = mahalanobis(this.model, feats);
+            
+            // Conformal Prediction Logic
+            if(cfg.conformal){
+                let gt = 0;
+                for(const s of this.scores) if(s >= m2) gt++;
+                p = (gt+1)/(this.scores.length+1);
+            } else {
+                p = Math.exp(-m2/2); // Fallback
+            }
+            
+            isAnom = p < cfg.alpha;
+            
+            // Update scores (gating)
+            if(!isAnom){
+                this.scores.push(m2);
+                if(this.scores.length > cfg.cwin) this.scores.shift();
+            }
+            
+            // Martingale
+            if(cfg.mart){
+                const factor = 0.7 * (p ** (0.7-1));
+                this.martingale += Math.log10(Math.max(1e-10, factor));
+                if(this.martingale < 0) this.martingale = 0;
+            }
+            
+            // Entropy (Negentropy)
+            if(cfg.invEntropy && this.baselineEntropy > 0){
+                if(entropy < this.baselineEntropy * 0.90 && entropy > 0.1) isOrdered = true;
+            }
+        }
+        
+        // LOGIC
+        if(isAnom && (!this.lastAlert || nowMs()-this.lastAlert>800)){
+            this.lastAlert = nowMs();
+            log(`Anomaly! m²=${m2.toFixed(1)} p=${p.toFixed(4)}`, "bad");
+        }
+        if(isOrdered && (!this.lastOrder || nowMs()-this.lastOrder>1500)){
+            this.lastOrder = nowMs();
+            log(`ORDER DETECTED (Negentropy)`, "order");
+        }
+        
+        this.uiData = { m2, p, entropy, mart:this.martingale, isAnom, isOrdered, buf };
+    },
+    
+    async calibrate(sec=10){
+        setPill(pillRun, "Calibrating...", "warn");
+        this.X = []; this.scores = []; this.model = null;
+        log("Calibrating...", "warn");
+        
+        await new Promise(r => setTimeout(r, sec*1000));
+        
+        if(this.X.length > 10){
+            this.model = robustMeanCov(this.X);
+            let eSum=0; for(const f of this.X) eSum+=f[1];
+            this.baselineEntropy = eSum/this.X.length;
+            log(`Calibrated. Entropy Base: ${this.baselineEntropy.toFixed(3)}`, "good");
+        }
+        setPill(pillRun, "Monitoring", "good");
+    }
+  };
+  
+  // --- UI EVENTS ---
+  tSchumann.addEventListener("change", ()=> engine.toggleSchumann(tSchumann.checked));
+  
+  function applyPreset(name){
+     const p = PRESETS[name];
+     alpha.value = p.alpha;
+     tSchumann.checked = p.schumann;
+     tEntropy.checked = p.entropy;
+     tRobust.checked = p.robust;
+     tConformal.checked = p.conformal;
+     tMartingale.checked = p.mart;
+     
+     engine.toggleSchumann(p.schumann);
+     
+     document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+     $(`btnPreset${name.charAt(0).toUpperCase() + name.slice(1)}`)?.classList.add("active");
+     log(`Preset: ${name}`, "info");
+  }
+
+  // --- DRAW LOOP ---
+  function draw(){
+    requestAnimationFrame(draw);
+    if(!engine.uiData) return;
+    const { m2, p, entropy, mart, isAnom, isOrdered, buf } = engine.uiData;
+    
+    const ctx = cWave.getContext("2d");
+    const W=cWave.width, H=cWave.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.lineWidth=2;
+    
+    if(isAnom) ctx.strokeStyle = "#FF4D6D"; 
+    else if(isOrdered) ctx.strokeStyle = "#00D4FF"; 
+    else ctx.strokeStyle = "#7C5CFF"; 
+    
+    ctx.beginPath();
+    const step = Math.ceil(buf.length/W);
+    for(let i=0;i<W;i++) ctx.lineTo(i, (buf[i*step]*0.5+0.5)*H);
+    ctx.stroke();
+    
+    const mCtx = cMeters.getContext("2d");
+    mCtx.clearRect(0,0,800,420);
+    
+    const drawGauge = (x,y,v,max,lbl,col) => {
+        mCtx.strokeStyle="#333"; mCtx.lineWidth=10; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,0); mCtx.stroke();
+        mCtx.strokeStyle=col; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,Math.PI+Math.min(1,v/max)*Math.PI); mCtx.stroke();
+        mCtx.fillStyle="#FFF"; mCtx.fillText(v.toFixed(2),x-15,y-10); mCtx.fillText(lbl,x-20,y+20);
+    };
+    
+    drawGauge(150,100,m2,20,"m² Score", isAnom?"#FF4D6D":"#2EE6A6");
+    drawGauge(400,100,p,1,"p-value", isAnom?"#FF4D6D":"#2EE6A6");
+    drawGauge(650,100,entropy,1,"Entropy", isOrdered?"#00D4FF":"#7C5CFF");
+    drawGauge(150,300,mart,10,"Evidence", "#7C5CFF");
+    
+    kM2.textContent = m2.toFixed(2);
+    kP.textContent = p.toFixed(4);
+    kE.textContent = mart.toFixed(1);
+    
+    if(isOrdered) setPill(pillAnom, "ORDER DETECTED", "order");
+    else if(isAnom) setPill(pillAnom, "ANOMALY", "bad");
+    else setPill(pillAnom, "Scanning...", "good");
+  }
+  requestAnimationFrame(draw);
+  
+  btnStart.onclick = () => engine.start();
+  btnStop.onclick = () => engine.stop();
+  btnCal.onclick = () => engine.calibrate();
+  rngMonitor.oninput = () => { if(engine.gain) engine.gain.gain.value = chkMonitor.checked?rngMonitor.value:0; };
+  chkMonitor.onchange = rngMonitor.oninput;
+  
+  $("btnPresetScientific").onclick = () => applyPreset("scientific");
+  $("btnPresetPsi").onclick = () => applyPreset("psi");
+  $("btnPresetHybrid").onclick = () => applyPreset("hybrid");
+  $("btnPresetEVP").onclick = () => applyPreset("evp");
+
+  if(isSecureCtx()) setPill($("pillCtx"), "Context: Secure", "good");
+})();
+</script>
+</body>
+</html>

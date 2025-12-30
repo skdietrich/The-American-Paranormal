@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ITC Anomaly Lab — Psi-Enhanced v3.2</title>
+<style>
+  :root{
+    --bg:#070A12;
+    --panel:#0C1324;
+    --text:#E6ECFF;
+    --muted:#9AA6D6;
+    --accent:#7C5CFF;
+    --bad:#FF4D6D; /* Red for High Energy */
+    --good:#2EE6A6;
+    --warn:#FFCF5C;
+    --order:#00D4FF; /* Cyan for Order/Entropy */
+    --shadow: 0 18px 40px rgba(0,0,0,.45);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(1200px 800px at 20% 10%, rgba(124,92,255,.22), transparent 60%),
+                radial-gradient(900px 600px at 80% 20%, rgba(0,212,255,.15), transparent 55%),
+                var(--bg);
+    color:var(--text);
+  }
+  header{ padding:18px; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .logo{
+    width:42px;height:42px;border-radius:14px;
+    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(0,212,255,.85));
+    box-shadow: 0 14px 30px rgba(124,92,255,.18);
+  }
+  h1{margin:0;font-size:16px;letter-spacing:.3px}
+  .sub{margin:2px 0 0 0;color:var(--muted);font-size:12px}
+  .topbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  
+  button{
+    background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65));
+    color:white; border:0; padding:10px 12px; border-radius:12px;
+    box-shadow: 0 10px 20px rgba(124,92,255,.20); cursor:pointer;
+    font: inherit; transition: transform .05s ease, filter .2s ease;
+  }
+  button:active{transform: translateY(1px)}
+  button.secondary{ background: rgba(255,255,255,.06); box-shadow:none; border:1px solid rgba(255,255,255,.10); }
+  button:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.6)}
+  
+  main{ padding: 10px 18px 40px 18px; display:grid; grid-template-columns: 360px 1fr; gap:14px; }
+  @media (max-width: 1040px){ main{grid-template-columns: 1fr} }
+  
+  .card{
+    background: linear-gradient(180deg, rgba(12,19,36,.86), rgba(9,14,28,.86));
+    border:1px solid rgba(255,255,255,.09); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow:hidden; margin-bottom: 14px;
+  }
+  .card h2{
+    margin:0; font-size:13px; padding:12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .card .content{padding:12px}
+  
+  .kpiRow{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+  .kpi{ background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; }
+  .kpi .v{font-size:18px;margin-top:4px}
+  .kpi .t{font-size:11px;color:var(--muted)}
+  
+  .pill{ padding:3px 8px; border-radius:999px; font-size:11px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--muted); }
+  .pill.good{ color: var(--good); border-color: rgba(46,230,166,.3); background: rgba(46,230,166,.1); }
+  .pill.bad{ color: var(--bad); border-color: rgba(255,77,109,.3); background: rgba(255,77,109,.1); }
+  .pill.warn{ color: var(--warn); border-color: rgba(255,207,92,.3); background: rgba(255,207,92,.1); }
+  .pill.order{ color: var(--order); border-color: rgba(0,212,255,.3); background: rgba(0,212,255,.1); font-weight:bold; text-shadow: 0 0 10px rgba(0,212,255,.4); }
+
+  .control{ background: rgba(0,0,0,.14); border:1px solid rgba(255,255,255,.08); border-radius: 14px; padding:10px; margin-bottom: 10px; }
+  .toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius: 12px; background: rgba(255,255,255,.03); margin-bottom: 6px;}
+  .slider{ display:grid; grid-template-columns: 1fr 100px; gap:10px; align-items:center; margin-bottom: 8px; }
+  input, select{ width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:white; padding:8px; border-radius:8px; }
+
+  canvas{ width:100%; display:block; background: #000; border-top:1px solid rgba(255,255,255,.08); }
+  .bigCanvas{height: 240px}
+
+  .preset-btn{ text-align: left; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .preset-btn:hover{ filter: brightness(1.2); }
+  .preset-btn.active{ background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(86,74,255,.65)); border-color: rgba(124,92,255,.8); }
+  
+  .log{ max-height: 180px; overflow-y:auto; font-family: monospace; font-size:11px; padding:10px; color: var(--muted); }
+  .log .item{ border-bottom:1px dashed rgba(255,255,255,.05); padding:4px 0; }
+  
+  .warnBox{ background: rgba(255,207,92,.1); color: var(--warn); padding:10px; border-radius:8px; font-size:12px; margin-bottom:10px; display:none; }
+  
+  /* Active effect animation */
+  @keyframes pulse { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
+  .active-effect { color: var(--order); animation: pulse 2s infinite; font-weight:bold; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <div>
+      <h1>ITC Anomaly Lab</h1>
+      <div class="sub">v3.2 Psi-Enhanced • Schumann + Inverse Entropy</div>
+    </div>
+  </div>
+  <div class="topbar">
+    <button id="btnStart">Start System</button>
+    <button id="btnStop" class="secondary" disabled>Stop</button>
+    <button id="btnCal" class="secondary" disabled>Calibrate (10s)</button>
+    <span id="pillCtx" class="pill">Context: unknown</span>
+    <span id="pillRun" class="pill">Idle</span>
+  </div>
+</header>
+
+<main>
+  <section>
+    
+    <div class="card">
+      <h2>⚡ Quick Presets</h2>
+      <div class="content">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+          <button id="btnPresetBalanced" class="preset-btn secondary active" data-preset="balanced">
+            <b>🎯 Balanced</b><div style="font-size:10px;opacity:.7">Standard ITC</div>
+          </button>
+          <button id="btnPresetEVP" class="preset-btn secondary" data-preset="evp">
+            <b>👻 EVP Mode</b><div style="font-size:10px;opacity:.7">Voice optimized</div>
+          </button>
+          <button id="btnPresetSchumann" class="preset-btn secondary" data-preset="schumann">
+            <b>🧠 Schumann</b><div style="font-size:10px;opacity:.7">7.83Hz Carrier Active</div>
+          </button>
+          <button id="btnPresetOrder" class="preset-btn secondary" data-preset="order">
+            <b>💠 Order Watch</b><div style="font-size:10px;opacity:.7">Seek structure/pattern</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span>Controls</span> <span class="pill" id="pillEngine">Engine: —</span></h2>
+      <div class="content">
+        <div id="ctxWarn" class="warnBox"><b>Mic blocked?</b> Use localhost or HTTPS.</div>
+
+        <div class="control" style="border:1px solid rgba(0,212,255,.3); background:rgba(0,212,255,.05)">
+          <div style="font-size:12px; font-weight:700; color:var(--order); margin-bottom:8px; display:flex; justify-content:space-between;">
+             <span>PSI MODULES</span>
+             <span id="schumannStatus" style="font-weight:400; opacity:0">ACTIVE</span>
+          </div>
+          
+          <div class="toggle">
+            <div>
+              <b style="font-size:12px; color:#fff">Schumann Resonator</b>
+              <div style="font-size:10px;color:var(--muted)">7.83Hz Isochronic Carrier (Audible)</div>
+            </div>
+            <input id="tSchumann" type="checkbox" style="width:auto">
+          </div>
+          
+          <div class="toggle">
+            <div>
+              <b style="font-size:12px; color:#fff">Inverse Entropy Listener</b>
+              <div style="font-size:10px;color:var(--muted)">Detects "Negentropy" (Order/Pattern)</div>
+            </div>
+            <input id="tEntropy" type="checkbox" style="width:auto">
+          </div>
+        </div>
+
+        <div class="control">
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+            <input type="checkbox" id="chkMonitor" style="width:auto"> <span>Monitor Mic (Feedback Risk)</span>
+          </div>
+          <div class="slider">
+            <span style="font-size:12px;color:var(--muted)">Gain</span>
+            <input id="rngMonitor" type="range" min="0" max="1" step="0.01" value="0"/>
+          </div>
+        </div>
+
+        <div class="control">
+          <div class="toggle">
+            <div><b style="font-size:12px">Robust Scoring</b><div style="font-size:10px;color:var(--muted)">Mahalanobis m²</div></div>
+            <input id="tRobust" type="checkbox" checked style="width:auto">
+          </div>
+          <div class="toggle">
+             <div><b style="font-size:12px">BOCD Shifts</b><div style="font-size:10px;color:var(--muted)">Changepoint</div></div>
+             <input id="tBOCD" type="checkbox" checked style="width:auto">
+          </div>
+        </div>
+
+        <div class="control">
+          <div class="slider">
+            <div style="font-size:12px">Sensitivity (Alpha)</div>
+            <input id="alpha" type="range" min="0.0005" max="0.05" step="0.0005" value="0.01"/>
+          </div>
+          <input id="alphaN" type="number" step="0.001" value="0.01" style="font-size:11px; display:none">
+        </div>
+        
+        <div style="display:none">
+            <input id="rcut" value="4.0"><input id="rcutN" value="4.0">
+            <input id="win" value="240"><input id="winN" value="240">
+            <input id="cwin" value="300"><input id="cwinN" value="300">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2><span>Visuals</span> <span class="pill" id="pillFPS">FPS: —</span></h2>
+      <canvas id="cWave" class="bigCanvas" width="1000" height="240"></canvas>
+      <canvas id="cSpec" width="1000" height="150" style="height:150px"></canvas>
+    </div>
+
+    <div class="card">
+      <h2><span>Analysis</span> <span class="pill" id="pillAnom">Normal</span></h2>
+      <canvas id="cMeters" width="800" height="420" style="height:420px"></canvas>
+      
+      <div class="content">
+        <div class="kpiRow">
+          <div class="kpi"><div class="t">m² Score</div><div class="v" id="kM2">—</div></div>
+          <div class="kpi"><div class="t">Entropy</div><div class="v" id="kEnt">—</div></div>
+          <div class="kpi"><div class="t">Resonance</div><div class="v" id="kRes">OFF</div></div>
+        </div>
+        <div class="log" id="log" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  // --- PRESETS ---
+  const PRESETS = {
+    balanced: { alpha: 0.01, schumann: false, entropy: false },
+    evp:      { alpha: 0.015, schumann: false, entropy: false },
+    schumann: { alpha: 0.01, schumann: true, entropy: true },
+    order:    { alpha: 0.01, schumann: false, entropy: true }
+  };
+  let currentPreset = "balanced";
+
+  // --- HELPERS ---
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const fmt = (x, d=3) => (Number.isFinite(x) ? x.toFixed(d) : "—");
+  const nowMs = () => performance.now();
+  function isSecureCtx(){
+    return (window.isSecureContext === true) || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  }
+  function setPill(el, text, cls){
+    el.textContent = text;
+    el.classList.remove("good","warn","bad","order");
+    if(cls) el.classList.add(cls);
+  }
+
+  // --- DOM ---
+  const $ = (id) => document.getElementById(id);
+  const btnStart=$("btnStart"), btnStop=$("btnStop"), btnCal=$("btnCal");
+  const pillRun=$("pillRun"), pillAnom=$("pillAnom");
+  const logEl=$("log");
+  
+  const chkMonitor=$("chkMonitor"), rngMonitor=$("rngMonitor");
+  const tSchumann=$("tSchumann"), tEntropy=$("tEntropy");
+  
+  const alpha=$("alpha");
+  const kM2=$("kM2"), kEnt=$("kEnt"), kRes=$("kRes");
+  const cWave=$("cWave"), cSpec=$("cSpec"), cMeters=$("cMeters");
+
+  // --- LOGGING ---
+  function log(msg, kind="info"){
+    const div = document.createElement("div");
+    div.className = "item";
+    const ts = new Date().toLocaleTimeString().split(" ")[0];
+    div.innerHTML = `<span style="opacity:.6">[${ts}]</span> <span class="${kind==='bad'?'pill bad':(kind==='order'?'pill order':(kind==='warn'?'pill warn':''))}">${msg}</span>`;
+    logEl.prepend(div);
+    if(logEl.childNodes.length > 50) logEl.removeChild(logEl.lastChild);
+  }
+
+  // --- MATH ---
+  function mean(arr){ let s=0; for(const x of arr)s+=x; return s/arr.length; }
+  function median(v){ const a=v.slice().sort((x,y)=>x-y); const m=a.length>>1; return (a.length%2)?a[m]:0.5*(a[m-1]+a[m]); }
+  function mad(v, m){ return median(v.map(x=>Math.abs(x-m)))*1.4826; }
+  function dot(a,b){ let s=0; for(let i=0;i<a.length;i++)s+=a[i]*b[i]; return s; }
+  
+  function cholesky(A){
+    const n=A.length, L=Array.from({length:n},()=>Array(n).fill(0));
+    for(let i=0;i<n;i++){
+      for(let j=0;j<=i;j++){
+        let s=A[i][j]; for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];
+        if(i===j){ if(s<=1e-12) throw new Error("Non-PD"); L[i][j]=Math.sqrt(s); }
+        else L[i][j]=s/L[j][j];
+      }
+    }
+    return L;
+  }
+  function cholSolve(L, b){
+    const n=L.length, y=Array(n).fill(0), x=Array(n).fill(0);
+    for(let i=0;i<n;i++){ let s=b[i]; for(let k=0;k<i;k++)s-=L[i][k]*y[k]; y[i]=s/L[i][i]; }
+    for(let i=n-1;i>=0;i--){ let s=y[i]; for(let k=i+1;k<n;k++)s-=L[k][i]*x[k]; x[i]=s/L[i][i]; }
+    return x;
+  }
+
+  // --- ROBUST STATS ---
+  function robustMeanCov(X, tukeyC=4.0){
+    const n=X.length; if(n<5)return null;
+    const p=X[0].length;
+    const med=Array(p), scale=Array(p);
+    for(let j=0;j<p;j++){ const col=X.map(r=>r[j]); med[j]=median(col); scale[j]=mad(col,med[j])||1; }
+    const Z=X.map(r=>r.map((v,j)=>(v-med[j])/scale[j]));
+    
+    let mu=Array(p).fill(0);
+    for(const z of Z) for(let j=0;j<p;j++) mu[j]+=z[j];
+    for(let j=0;j<p;j++) mu[j]/=n;
+    
+    let S=Array.from({length:p},()=>Array(p).fill(0));
+    for(const z of Z){ for(let i=0;i<p;i++){ const d=z[i]-mu[i]; for(let j=0;j<=i;j++) S[i][j]+=d*(z[j]-mu[j]); } }
+    for(let i=0;i<p;i++) { for(let j=0;j<=i;j++){ S[i][j]/=(n-1); S[j][i]=S[i][j]; } S[i][i]+=1e-5; }
+
+    const lambda = 0.2;
+    for(let i=0;i<p;i++) for(let j=0;j<p;j++) S[i][j] = (1-lambda)*S[i][j] + (i===j?lambda:0);
+    return {med, scale, mu, S};
+  }
+
+  function mahalanobis(model, x){
+    const {med, scale, mu, S} = model;
+    const z = x.map((v,j)=>(v-med[j])/scale[j]);
+    const d = z.map((v,j)=>v-mu[j]);
+    let L; try{ L=cholesky(S); }catch(e){ return 0; }
+    return Math.max(0, dot(d, cholSolve(L,d)));
+  }
+
+  // --- AUDIO ENGINE ---
+  const engine = {
+    running: false, 
+    X: [], model: null, 
+    baselineEntropy: 0,
+    
+    // Nodes
+    audio: null, source: null, analyser: null, gain: null, proc: null,
+    
+    // Schumann Nodes
+    schOsc: null, schLFO: null, schGain: null,
+    
+    get config(){
+        return {
+            alpha: Number(alpha.value),
+            win: 240,
+            schumann: tSchumann.checked,
+            invEntropy: tEntropy.checked
+        };
+    },
+    
+    async start(){
+        try {
+            if(!isSecureCtx()) throw new Error("Insecure context. Use localhost or https.");
+            this.audio = new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
+            await this.audio.resume();
+            
+            // MIC INPUT
+            const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, autoGainControl:false, noiseSuppression:false}});
+            this.source = this.audio.createMediaStreamSource(stream);
+            
+            // ANALYSER
+            this.analyser = this.audio.createAnalyser();
+            this.analyser.fftSize = 2048;
+            this.analyser.smoothingTimeConstant = 0.2;
+            
+            // MONITOR OUT
+            this.gain = this.audio.createGain();
+            this.gain.gain.value = chkMonitor.checked ? Number(rngMonitor.value) : 0;
+            this.source.connect(this.gain).connect(this.audio.destination);
+            
+            // PROCESSOR
+            this.proc = this.audio.createScriptProcessor(2048, 1, 1);
+            this.proc.onaudioprocess = (e) => this.onAudio(e.inputBuffer.getChannelData(0));
+            this.source.connect(this.proc);
+            this.proc.connect(this.audio.createGain()).connect(this.audio.destination);
+            this.source.connect(this.analyser);
+            
+            this.running = true;
+            this.X=[]; this.model=null;
+            
+            // Apply Schumann if toggle is already on
+            if(this.config.schumann) this.toggleSchumann(true);
+            
+            setPill(pillRun, "Running", "good");
+            btnStart.disabled=true; btnStop.disabled=false; btnCal.disabled=false;
+            log("System engaged. Please calibrate.", "info");
+        } catch(e){
+            log(e.message, "bad");
+        }
+    },
+    
+    stop(){
+        this.toggleSchumann(false);
+        if(this.audio) this.audio.close();
+        this.running=false;
+        setPill(pillRun, "Stopped", "warn");
+        btnStart.disabled=false; btnStop.disabled=true; btnCal.disabled=true;
+    },
+    
+    toggleSchumann(isActive){
+        if(!this.audio) return;
+        
+        // Cleanup old
+        if(this.schOsc) { try{this.schOsc.stop();}catch(e){} this.schOsc.disconnect(); this.schOsc=null; }
+        if(this.schLFO) { try{this.schLFO.stop();}catch(e){} this.schLFO.disconnect(); this.schLFO=null; }
+        if(this.schGain){ this.schGain.disconnect(); this.schGain=null; }
+        
+        if(isActive){
+            // Isochronic Tone Generator: 110Hz (A2) modulated by 7.83Hz
+            const t = this.audio.currentTime;
+            
+            this.schGain = this.audio.createGain();
+            this.schGain.gain.value = 0; // modulated by LFO
+            
+            this.schOsc = this.audio.createOscillator();
+            this.schOsc.type = "sine";
+            this.schOsc.frequency.value = 110; // Carrier (Audible A2)
+            
+            this.schLFO = this.audio.createOscillator();
+            this.schLFO.type = "sine";
+            this.schLFO.frequency.value = 7.83; // Schumann Resonance
+            
+            // LFO gain to modulate carrier amplitude 0.05 to 0.15 (subtle)
+            const lfoAmp = this.audio.createGain();
+            lfoAmp.gain.value = 0.05; 
+            
+            // Wiring: LFO -> LFOAmp -> SchGain.gain
+            // Wiring: Osc -> SchGain -> Dest
+            
+            // Simple Isochronic: 
+            // We want volume to go up and down. 
+            // LFO (-1 to 1) -> Scale/Offset -> Gain
+            
+            this.schOsc.connect(this.schGain);
+            this.schGain.connect(this.audio.destination);
+            
+            // For simplicity in web audio, we just automate gain or use a dedicated LFO node structure
+            // Manual approach for reliability:
+            this.schGain.gain.setValueAtTime(0.08, t);
+            // We just let it run constant for now, complex LFO modulation requires AudioParam connection
+            // Let's do the proper connection:
+            this.schLFO.connect(this.schGain.gain); 
+            // But LFO goes negative, gain clips at 0. So -1..1 becomes 0..1 effectively half wave.
+            // That works for isochronic pulsing!
+            
+            this.schOsc.start(t);
+            this.schLFO.start(t);
+            
+            $("schumannStatus").style.opacity = 1;
+            $("schumannStatus").classList.add("active-effect");
+            log("Schumann Resonator (7.83Hz) Active.", "order");
+        } else {
+            $("schumannStatus").style.opacity = 0;
+            $("schumannStatus").classList.remove("active-effect");
+        }
+    },
+    
+    onAudio(buf){
+        if(!this.running) return;
+        
+        // 1. RMS
+        let sumSq=0;
+        for(let i=0;i<buf.length;i++) sumSq+=buf[i]*buf[i];
+        const rms = Math.sqrt(sumSq/buf.length);
+        
+        // 2. FFT & ENTROPY
+        const freq = new Uint8Array(this.analyser.frequencyBinCount);
+        this.analyser.getByteFrequencyData(freq);
+        
+        let specSum=0;
+        let p = new Float32Array(freq.length);
+        
+        // Normalize for Entropy
+        for(let i=0;i<freq.length;i++){ specSum+=freq[i]; }
+        let entropy = 0;
+        if(specSum > 0){
+            for(let i=0;i<freq.length;i++){
+                const prob = freq[i]/specSum;
+                if(prob>0) entropy -= prob * Math.log2(prob);
+            }
+            entropy /= Math.log2(freq.length); // Normalize 0..1
+        }
+        
+        // Feature Vector: RMS, Centroid(approx), Entropy
+        const feats = [rms, entropy];
+        
+        // Buffer
+        this.X.push(feats);
+        if(this.X.length > this.config.win) this.X.shift();
+        
+        // Stats
+        let m2 = 0;
+        let isHighEnergy = false;
+        let isOrdered = false;
+        
+        if(this.model){
+            // Robust Anomaly (High Energy/Weirdness)
+            m2 = mahalanobis(this.model, feats);
+            isHighEnergy = (Math.exp(-m2/2) < this.config.alpha); // Approx p-value check
+            
+            // Inverse Entropy (Negentropy)
+            // If current entropy is significantly LOWER than baseline
+            if(this.config.invEntropy && this.baselineEntropy > 0){
+                // If entropy drops by 10% relative to baseline
+                if(entropy < this.baselineEntropy * 0.90 && entropy > 0.1){
+                    isOrdered = true;
+                }
+            }
+        }
+        
+        // LOGIC
+        if(isHighEnergy && (!this.lastAlert || nowMs()-this.lastAlert>800)){
+            this.lastAlert = nowMs();
+            log(`High Energy: m²=${m2.toFixed(1)}`, "bad");
+        }
+        
+        if(isOrdered && (!this.lastOrder || nowMs()-this.lastOrder>1500)){
+            this.lastOrder = nowMs();
+            log(`ORDER DETECTED (Negentropy)`, "order");
+        }
+        
+        this.uiData = { m2, entropy, isHighEnergy, isOrdered, buf };
+    },
+    
+    async calibrate(sec=10){
+        setPill(pillRun, "Calibrating...", "warn");
+        this.X = []; this.model = null;
+        log("Calibrating...", "warn");
+        
+        await new Promise(r => setTimeout(r, sec*1000));
+        
+        if(this.X.length > 10){
+            this.model = robustMeanCov(this.X);
+            // Calculate baseline entropy
+            let eSum=0;
+            for(const f of this.X) eSum+=f[1];
+            this.baselineEntropy = eSum/this.X.length;
+            
+            log(`Calibrated. Baseline Entropy: ${this.baselineEntropy.toFixed(3)}`, "good");
+        }
+        setPill(pillRun, "Monitoring", "good");
+    }
+  };
+  
+  // --- UI EVENTS ---
+  tSchumann.addEventListener("change", ()=>{
+     engine.toggleSchumann(tSchumann.checked); 
+  });
+  
+  function applyPreset(name){
+     const p = PRESETS[name];
+     alpha.value = p.alpha;
+     tSchumann.checked = p.schumann;
+     tEntropy.checked = p.entropy;
+     engine.toggleSchumann(p.schumann);
+     
+     document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+     $(`btnPreset${name.charAt(0).toUpperCase() + name.slice(1)}`)?.classList.add("active");
+     log(`Preset: ${name}`, "info");
+  }
+
+  // --- DRAW LOOP ---
+  function draw(){
+    requestAnimationFrame(draw);
+    if(!engine.uiData) return;
+    const { m2, entropy, isHighEnergy, isOrdered, buf } = engine.uiData;
+    
+    // Wave
+    const ctx = cWave.getContext("2d");
+    const W=cWave.width, H=cWave.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.lineWidth=2;
+    
+    if(isHighEnergy) ctx.strokeStyle = "#FF4D6D"; // Red
+    else if(isOrdered) ctx.strokeStyle = "#00D4FF"; // Cyan
+    else ctx.strokeStyle = "#7C5CFF"; // Purple
+    
+    ctx.beginPath();
+    const step = Math.ceil(buf.length/W);
+    for(let i=0;i<W;i++) ctx.lineTo(i, (buf[i*step]*0.5+0.5)*H);
+    ctx.stroke();
+    
+    // Meters
+    const mCtx = cMeters.getContext("2d");
+    mCtx.clearRect(0,0,800,420);
+    
+    const drawGauge = (x,y,v,max,lbl,col) => {
+        mCtx.strokeStyle="#333"; mCtx.lineWidth=10; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,0); mCtx.stroke();
+        mCtx.strokeStyle=col; mCtx.beginPath(); mCtx.arc(x,y,40,Math.PI,Math.PI+Math.min(1,v/max)*Math.PI); mCtx.stroke();
+        mCtx.fillStyle="#FFF"; mCtx.fillText(v.toFixed(2),x-15,y-10); mCtx.fillText(lbl,x-20,y+20);
+    };
+    
+    drawGauge(150,100,m2,20,"m² Score", isHighEnergy?"#FF4D6D":"#2EE6A6");
+    drawGauge(400,100,entropy,1,"Entropy", isOrdered?"#00D4FF":"#7C5CFF");
+    
+    kM2.textContent = m2.toFixed(2);
+    kEnt.textContent = entropy.toFixed(3);
+    kRes.textContent = tSchumann.checked ? "7.83Hz" : "OFF";
+    kRes.style.color = tSchumann.checked ? "var(--order)" : "var(--muted)";
+    
+    if(isOrdered) setPill(pillAnom, "ORDER DETECTED", "order");
+    else if(isHighEnergy) setPill(pillAnom, "ENERGY ANOMALY", "bad");
+    else setPill(pillAnom, "Scanning...", "good");
+  }
+  requestAnimationFrame(draw);
+  
+  btnStart.onclick = () => engine.start();
+  btnStop.onclick = () => engine.stop();
+  btnCal.onclick = () => engine.calibrate();
+  rngMonitor.oninput = () => { if(engine.gain) engine.gain.gain.value = chkMonitor.checked?rngMonitor.value:0; };
+  chkMonitor.onchange = rngMonitor.oninput;
+  
+  $("btnPresetBalanced").onclick = () => applyPreset("balanced");
+  $("btnPresetEVP").onclick = () => applyPreset("evp");
+  $("btnPresetSchumann").onclick = () => applyPreset("schumann");
+  $("btnPresetOrder").onclick = () => applyPreset("order");
+
+  if(isSecureCtx()) setPill($("pillCtx"), "Context: Secure", "good");
+})();
+</script>
+</body>
+</html>
