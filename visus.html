@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VISUS v1.0 | Visual Scrying Engine</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-deep: #000000;
+    --fog-color: 200, 220, 255; /* Spectral Blue-White */
+    --accent: #fff;
+  }
+
+  body {
+    background-color: var(--bg-deep);
+    color: #888;
+    font-family: 'Rajdhani', sans-serif;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair; /* Precision cursor */
+  }
+
+  /* The Canvas is the Mirror */
+  canvas {
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 1;
+    /* CSS MAGIC: This creates the "Liquid" effect by blurring then contrasting */
+    filter: blur(8px) contrast(200%) brightness(80%);
+    opacity: 0;
+    transition: opacity 2s ease-in;
+  }
+  
+  canvas.active {
+    opacity: 1;
+  }
+
+  /* UI Layer (Floating HUD) */
+  .ui-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Let clicks pass to canvas */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+    box-sizing: border-box;
+    background: radial-gradient(circle, transparent 60%, #000 120%); /* Vignette */
+  }
+
+  /* Typography */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+  }
+
+  .status {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  /* Controls */
+  .control-dock {
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 12px 40px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(255,255,255,0.8);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Audio Visualizer (Subtle pulsing ring) */
+  .audio-ring {
+    width: 60px; height: 60px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: transform 0.1s;
+  }
+
+</style>
+</head>
+<body>
+
+<canvas id="scryCanvas"></canvas>
+
+<div class="ui-layer">
+  <div>
+    <h1>VISUS v1.0</h1>
+    <div class="status">Optical Scrying // Audio: 40Hz Binaural</div>
+  </div>
+
+  <div class="audio-ring" id="audioRing"></div>
+
+  <div class="control-dock">
+    <button class="btn-ghost" id="initBtn" onclick="initSystem()">Initialize Mirror</button>
+    <a href="index.html" class="btn-ghost" style="border:none; font-size: 0.65rem;">Terminate Session</a>
+  </div>
+</div>
+
+<script>
+  /**
+   * VISUS GOD-MODE ENGINE
+   * Features: Fluid Particle Physics, Audio Synthesis, Kinetic Reaction
+   */
+  
+  const canvas = document.getElementById('scryCanvas');
+  const ctx = canvas.getContext('2d');
+  const ring = document.getElementById('audioRing');
+  
+  let width, height;
+  let particles = [];
+  let isRunning = false;
+  
+  // High density for "Godlike" fluid look
+  const PARTICLE_COUNT = window.innerWidth < 600 ? 1500 : 3500; 
+  
+  // Mouse Physics
+  let mouse = { x: -1000, y: -1000, active: false };
+
+  // Audio Context
+  let audioCtx, osc, gainNode;
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+    
+    // Subtle parallax on UI ring
+    const moveX = (e.clientX - width/2) * 0.05;
+    const moveY = (e.clientY - height/2) * 0.05;
+    ring.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px)) scale(1.1)`;
+  });
+
+  // --- PARTICLE SYSTEM ---
+  class Particle {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Start random
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      
+      // Fluid movement vector
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      
+      this.size = Math.random() * 20 + 10; // Large particles for blur overlap
+      this.life = Math.random(); // 0 to 1
+      this.decay = 0.002 + Math.random() * 0.005;
+    }
+
+    update() {
+      // 1. Perlin-like Flow (Simulated)
+      // Particles swirl based on their position
+      const angle = (this.x * 0.002) + (this.y * 0.002);
+      this.vx += Math.cos(angle) * 0.02;
+      this.vy += Math.sin(angle) * 0.02;
+
+      // 2. Mouse Interaction (Magnetic Repulsion)
+      if (mouse.active) {
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        if (dist < 200) {
+          const force = (200 - dist) / 200;
+          const repulsionAngle = Math.atan2(dy, dx);
+          this.vx -= Math.cos(repulsionAngle) * force * 0.5;
+          this.vy -= Math.sin(repulsionAngle) * force * 0.5;
+        }
+      }
+
+      // 3. Apply Velocity
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // 4. Friction (Fluid viscosity)
+      this.vx *= 0.96;
+      this.vy *= 0.96;
+
+      // 5. Life Cycle
+      this.life -= this.decay;
+      if (this.life <= 0) this.init();
+
+      // Wrap screen
+      if (this.x > width + 50) this.x = -50;
+      if (this.x < -50) this.x = width + 50;
+      if (this.y > height + 50) this.y = -50;
+      if (this.y < -50) this.y = height + 50;
+    }
+
+    draw() {
+      // Draw as soft light
+      ctx.beginPath();
+      // Opacity is linked to life cycle (fade in/out)
+      let alpha = Math.sin(this.life * Math.PI); 
+      ctx.fillStyle = `rgba(200, 220, 255, ${alpha * 0.15})`;
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Populate
+  function createParticles() {
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    if (!isRunning) return;
+
+    // Fade out trail effect
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, width, height);
+
+    // Blending mode for "Ghostly" overlap
+    ctx.globalCompositeOperation = 'screen';
+
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  // --- AUDIO DRONE (The "Hum") ---
+  function startAudio() {
+    if (!window.AudioContext) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    osc = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+
+    // 40Hz is deep Gamma/Beta threshold (Focus/Trance)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(40, audioCtx.currentTime);
+    
+    // Very low volume background hum
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 2); // Fade in
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+  }
+
+  // --- SYSTEM INIT ---
+  function initSystem() {
+    if (isRunning) return;
+    
+    // Hide Button
+    document.getElementById('initBtn').style.display = 'none';
+    document.getElementById('scryCanvas').classList.add('active');
+    
+    isRunning = true;
+    createParticles();
+    animate();
+    startAudio();
+  }
+
+</script>
+</body>
+</html>
