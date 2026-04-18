@@ -2,320 +2,1202 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VISUS v1.0 | Visual Scrying Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="VISUS — Visual scrying engine with binaural audio. Part of The American Paranormal.">
+<title>VISUS — Scrying Engine</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=JetBrains+Mono:wght@400&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --bg-deep: #000000;
-    --fog-color: 200, 220, 255; /* Spectral Blue-White */
-    --accent: #fff;
-  }
+:root {
+  --bg: #000000;
+  --text: rgba(255, 255, 255, 0.85);
+  --text-dim: rgba(255, 255, 255, 0.45);
+  --text-faint: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --accent: rgba(200, 220, 255, 1);
+  --serif: 'Cinzel', serif;
+  --sans: 'Rajdhani', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
 
-  body {
-    background-color: var(--bg-deep);
-    color: #888;
-    font-family: 'Rajdhani', sans-serif;
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: crosshair; /* Precision cursor */
-  }
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+body { user-select: none; }
 
-  /* The Canvas is the Mirror */
-  canvas {
-    position: absolute;
-    top: 0; left: 0;
-    z-index: 1;
-    /* CSS MAGIC: This creates the "Liquid" effect by blurring then contrasting */
-    filter: blur(8px) contrast(200%) brightness(80%);
-    opacity: 0;
-    transition: opacity 2s ease-in;
-  }
-  
-  canvas.active {
-    opacity: 1;
-  }
+/* ——— The Mirror ——— */
+canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 2.5s ease-in;
+}
+canvas.active { opacity: 1; }
 
-  /* UI Layer (Floating HUD) */
-  .ui-layer {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 10;
-    pointer-events: none; /* Let clicks pass to canvas */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 40px;
-    box-sizing: border-box;
-    background: radial-gradient(circle, transparent 60%, #000 120%); /* Vignette */
-  }
+/* Vignette overlay */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.8) 100%);
+  opacity: 0;
+  transition: opacity 2.5s ease-in;
+}
+.vignette.active { opacity: 1; }
 
-  /* Typography */
-  h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    color: rgba(255,255,255,0.3);
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    margin: 0;
-    text-align: center;
-    text-shadow: 0 0 10px rgba(255,255,255,0.1);
-  }
+/* ——— UI Layers ——— */
+.ui {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(20px, 4vw, 48px);
+}
+.ui > * { pointer-events: auto; }
 
-  .status {
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.2);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    text-align: center;
-    margin-top: 5px;
-  }
+/* Top bar */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  pointer-events: none;
+}
+.brand {
+  text-align: center;
+  flex: 1;
+}
+h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  letter-spacing: clamp(6px, 1.5vw, 10px);
+  color: rgba(255,255,255,0.35);
+  margin: 0;
+  text-shadow: 0 0 20px rgba(255,255,255,0.1);
+  transition: color 1s;
+}
+body.scrying h1 { color: rgba(255,255,255,0.12); }
 
-  /* Controls */
-  .control-dock {
-    pointer-events: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
+.status {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 6px;
+}
 
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.4);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.75rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 12px 40px;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.5s ease;
-    text-decoration: none;
-  }
+/* Timer display (top right) */
+.timer-display {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  pointer-events: auto;
+}
+.timer-display.visible { display: inline-block; }
+.timer-display.ending { color: var(--accent); border-color: rgba(200,220,255,0.4); }
 
-  .btn-ghost:hover {
-    border-color: rgba(255,255,255,0.8);
-    color: #fff;
-    box-shadow: 0 0 30px rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-  }
+/* Exit button (top right when no timer) */
+.exit-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-dim);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: none;
+}
+.exit-btn.visible { display: inline-block; }
+.exit-btn:hover { color: #fff; border-color: var(--border-strong); }
 
-  /* Audio Visualizer (Subtle pulsing ring) */
-  .audio-ring {
-    width: 60px; height: 60px;
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 50%;
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    transition: transform 0.1s;
-  }
+/* Focal anchor (center point of light) */
+.anchor {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 8px rgba(255,255,255,0.9),
+    0 0 24px rgba(200,220,255,0.5),
+    0 0 48px rgba(200,220,255,0.2);
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2s ease-in;
+  animation: anchor-breathe 4s ease-in-out infinite;
+}
+.anchor.visible { opacity: 1; }
+@keyframes anchor-breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.4); }
+}
 
+/* ——— Start screen ——— */
+.start-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-bottom: 20px;
+  transition: opacity 0.6s, transform 0.6s;
+}
+.start-dock.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+.btn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 14px 40px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 500;
+}
+.btn:hover {
+  border-color: rgba(255,255,255,0.7);
+  color: #fff;
+  box-shadow: 0 0 40px rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+.btn.primary {
+  border-color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.9);
+  padding: 16px 56px;
+  letter-spacing: 4px;
+}
+.btn.ghost {
+  border: none;
+  font-size: 0.65rem;
+  padding: 10px 20px;
+  color: var(--text-faint);
+}
+.btn.ghost:hover { color: var(--text-dim); background: transparent; box-shadow: none; }
+
+/* ——— Config Panel (pre-session) ——— */
+.config-panel {
+  max-width: 420px;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.config-section { margin-bottom: 20px; }
+.config-section:last-child { margin-bottom: 0; }
+.config-label {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+.pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pill {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+  text-align: center;
+  white-space: nowrap;
+}
+.pill:hover { color: var(--text); border-color: var(--border-strong); }
+.pill.selected {
+  color: var(--accent);
+  border-color: rgba(200,220,255,0.5);
+  background: rgba(200,220,255,0.08);
+}
+.pill small {
+  display: block;
+  font-size: 0.55rem;
+  opacity: 0.6;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+.headphone-note {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 1px solid rgba(200, 220, 255, 0.3);
+  font-size: 0.7rem;
+  color: rgba(200, 220, 255, 0.65);
+  font-style: italic;
+  letter-spacing: 0.5px;
+  display: none;
+  animation: fadein-note 0.4s ease;
+}
+.headphone-note.visible { display: block; }
+@keyframes fadein-note {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.toggle-row:first-of-type { border-top: none; padding-top: 0; }
+.toggle-text {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.toggle-text .sub {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.toggle {
+  width: 36px; height: 20px;
+  background: var(--border);
+  border: none;
+  border-radius: 100px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle.on { background: rgba(200,220,255,0.6); }
+.toggle.on::after { transform: translateX(16px); }
+
+/* ——— Journal modal (post-session) ——— */
+.journal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+  animation: fadein 1.2s ease;
+}
+.journal-backdrop.show { display: flex; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+.journal {
+  max-width: 540px;
+  width: 100%;
+  padding: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: #060608;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.journal h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.1rem;
+  letter-spacing: 6px;
+  margin: 0 0 4px;
+}
+.journal .j-sub {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.journal-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.j-meta-item { text-align: center; }
+.j-meta-item .k {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.j-meta-item .v {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.prompt {
+  margin-bottom: 16px;
+}
+.prompt-q {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-radius: 3px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: rgba(200,220,255,0.4); }
+
+.journal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.journal-actions .btn { flex: 1; padding: 12px; font-size: 0.7rem; }
+
+/* ——— Past entries ——— */
+.past-entries-link {
+  text-align: center;
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.past-entries-link:hover { color: var(--text-dim); }
+
+.entries-list { font-size: 0.8rem; }
+.entry {
+  padding: 12px 0;
+  border-top: 1px dotted var(--border);
+}
+.entry:first-child { border-top: none; }
+.entry-head {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.entry-text { color: var(--text); line-height: 1.4; white-space: pre-wrap; }
+
+/* ——— Responsive ——— */
+@media (max-width: 480px) {
+  h1 { letter-spacing: 4px; }
+  .config-panel { padding: 18px; }
+  .btn.primary { padding: 14px 36px; }
+  .journal { padding: 24px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .anchor { animation: none; }
+  canvas, .vignette { transition: opacity 0.3s; }
+}
+
+button:focus-visible { outline: 1px solid rgba(200,220,255,0.6); outline-offset: 3px; }
 </style>
 </head>
 <body>
 
-<canvas id="scryCanvas"></canvas>
+<canvas id="mirror"></canvas>
+<div class="vignette" id="vignette"></div>
+<div class="anchor" id="anchor"></div>
 
-<div class="ui-layer">
-  <div>
-    <h1>VISUS v1.0</h1>
-    <div class="status">Optical Scrying // Audio: 40Hz Binaural</div>
+<div class="ui">
+  <!-- Top bar -->
+  <div class="top">
+    <div style="width:80px"></div>
+    <div class="brand">
+      <h1>VISUS</h1>
+      <div class="status" id="status">Scrying Engine · v2.0</div>
+    </div>
+    <div>
+      <span class="timer-display" id="timer">—</span>
+      <button class="exit-btn" id="exit-btn" title="End session (Esc)">End</button>
+    </div>
   </div>
 
-  <div class="audio-ring" id="audioRing"></div>
+  <!-- Start dock -->
+  <div class="start-dock" id="start-dock">
 
-  <div class="control-dock">
-    <button class="btn-ghost" id="initBtn" onclick="initSystem()">Initialize Mirror</button>
-    <a href="index.html" class="btn-ghost" style="border:none; font-size: 0.65rem;">Terminate Session</a>
+    <div class="config-panel" id="config">
+
+      <div class="config-section">
+        <div class="config-label">Session Length</div>
+        <div class="pills" data-group="duration">
+          <button class="pill" data-val="0">Open<small>∞</small></button>
+          <button class="pill" data-val="300">5m<small>brief</small></button>
+          <button class="pill" data-val="900">15m<small>standard</small></button>
+          <button class="pill" data-val="1800">30m<small>deep</small></button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-label">Binaural Frequency</div>
+        <div class="pills" data-group="beat">
+          <button class="pill" data-val="0">Off<small>silent</small></button>
+          <button class="pill" data-val="7.83">7.83Hz<small>Schumann</small></button>
+          <button class="pill" data-val="10">10Hz<small>alpha</small></button>
+          <button class="pill" data-val="40">40Hz<small>gamma</small></button>
+        </div>
+        <div class="headphone-note" id="hp-note">Use stereo headphones — binaural effect requires channel separation.</div>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          Focal Anchor
+          <span class="sub">Central point of light to fix the gaze</span>
+        </div>
+        <button class="toggle" id="tog-anchor" aria-label="Focal anchor"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          Ambient Bed
+          <span class="sub">Subtle pink noise underlay</span>
+        </div>
+        <button class="toggle" id="tog-noise" aria-label="Ambient noise"></button>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          End-of-session Journal
+          <span class="sub">Record impressions when the timer completes</span>
+        </div>
+        <button class="toggle" id="tog-journal" aria-label="Journal"></button>
+      </div>
+    </div>
+
+    <button class="btn primary" id="btn-init">Open the Mirror</button>
+    <a href="https://skdietrich.github.io/The-American-Paranormal/" class="btn ghost">Return to Portal</a>
+    <div class="past-entries-link" id="past-link" style="display:none">View past entries</div>
   </div>
 </div>
 
+<!-- ——— Journal Modal ——— -->
+<div class="journal-backdrop" id="journal-backdrop">
+  <div class="journal" id="journal-content">
+    <!-- injected -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <script>
-  /**
-   * VISUS GOD-MODE ENGINE
-   * Features: Fluid Particle Physics, Audio Synthesis, Kinetic Reaction
-   */
-  
-  const canvas = document.getElementById('scryCanvas');
-  const ctx = canvas.getContext('2d');
-  const ring = document.getElementById('audioRing');
-  
-  let width, height;
-  let particles = [];
-  let isRunning = false;
-  
-  // High density for "Godlike" fluid look
-  const PARTICLE_COUNT = window.innerWidth < 600 ? 1500 : 3500; 
-  
-  // Mouse Physics
-  let mouse = { x: -1000, y: -1000, active: false };
+'use strict';
 
-  // Audio Context
-  let audioCtx, osc, gainNode;
+// ═══════════════════════════════════════════════════════════════
+// STATE & CONFIG
+// ═══════════════════════════════════════════════════════════════
+const cfg = {
+  duration: 0,        // seconds; 0 = open-ended
+  beat: 0,            // binaural beat frequency in Hz; 0 = off
+  anchor: false,
+  noise: false,
+  journal: false
+};
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+// Load persisted config
+try {
+  const saved = localStorage.getItem('visus.cfg');
+  if (saved) Object.assign(cfg, JSON.parse(saved));
+} catch(e) {}
+
+function persistCfg() {
+  try { localStorage.setItem('visus.cfg', JSON.stringify(cfg)); } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLOW FIELD — simplified noise-based curl field
+// We approximate 2D curl noise with two offset sine-combinations,
+// giving genuine swirling structure rather than a plain sine gradient.
+// ═══════════════════════════════════════════════════════════════
+const Flow = {
+  t: 0,
+  scale: 0.0012,
+  timeScale: 0.00008,
+
+  // Returns a 2D flow vector at (x, y) — smooth, divergence-free-ish
+  field(x, y) {
+    const s = this.scale;
+    const t = this.t;
+    // Two octaves combined for organic feel
+    const a1 = Math.sin(x * s + t) + Math.cos(y * s * 1.3 - t * 1.1);
+    const a2 = Math.cos(x * s * 2.1 - t * 0.7) + Math.sin(y * s * 2.3 + t * 0.9);
+    const a3 = Math.sin((x + y) * s * 0.5 + t * 0.3);
+    const angle = (a1 + a2 * 0.5 + a3) * 0.9;
+    return { fx: Math.cos(angle), fy: Math.sin(angle) };
+  },
+
+  step(dt) { this.t += dt * this.timeScale; }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PARTICLE SYSTEM
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('mirror');
+const ctx = canvas.getContext('2d', { alpha: false });
+let W, H, DPR;
+let particles = [];
+let running = false;
+let lastFrame = 0;
+
+// Pointer (mouse or touch)
+const pointer = { x: -9999, y: -9999, active: false };
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+// Particle count adapts to viewport — keeps perf sane on mobile
+function targetParticleCount() {
+  const area = W * H;
+  // ~1 particle per 1500 px² but capped for phones
+  const n = Math.round(area / 1500);
+  return Math.max(400, Math.min(n, 2200));
+}
+
+class Particle {
+  constructor() { this.reset(true); }
+
+  reset(initial = false) {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.size = 16 + Math.random() * 36;        // larger = softer bloom
+    this.life = initial ? Math.random() : 0;    // stagger at startup
+    this.maxLife = 1;
+    this.decay = 0.0015 + Math.random() * 0.003;
+    this.hue = 200 + Math.random() * 40;        // blue-white range
   }
-  window.addEventListener('resize', resize);
-  resize();
 
-  window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-    mouse.active = true;
-    
-    // Subtle parallax on UI ring
-    const moveX = (e.clientX - width/2) * 0.05;
-    const moveY = (e.clientY - height/2) * 0.05;
-    ring.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px)) scale(1.1)`;
-  });
+  update(dt) {
+    // Flow field
+    const f = Flow.field(this.x, this.y);
+    this.vx += f.fx * 0.08;
+    this.vy += f.fy * 0.08;
 
-  // --- PARTICLE SYSTEM ---
-  class Particle {
-    constructor() {
-      this.init();
+    // Pointer repulsion
+    if (pointer.active) {
+      const dx = pointer.x - this.x;
+      const dy = pointer.y - this.y;
+      const d2 = dx * dx + dy * dy;
+      const R = 180;
+      if (d2 < R * R && d2 > 0.01) {
+        const d = Math.sqrt(d2);
+        const strength = (1 - d / R) * 0.9;
+        this.vx -= (dx / d) * strength;
+        this.vy -= (dy / d) * strength;
+      }
     }
 
-    init() {
-      // Start random
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      
-      // Fluid movement vector
-      this.vx = (Math.random() - 0.5) * 0.5;
-      this.vy = (Math.random() - 0.5) * 0.5;
-      
-      this.size = Math.random() * 20 + 10; // Large particles for blur overlap
-      this.life = Math.random(); // 0 to 1
-      this.decay = 0.002 + Math.random() * 0.005;
+    // Viscosity
+    this.vx *= 0.94;
+    this.vy *= 0.94;
+
+    // Integrate
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Life cycle
+    this.life += this.decay;
+    if (this.life >= this.maxLife) this.reset();
+
+    // Wrap
+    if (this.x < -60) this.x = W + 60;
+    else if (this.x > W + 60) this.x = -60;
+    if (this.y < -60) this.y = H + 60;
+    else if (this.y > H + 60) this.y = -60;
+  }
+
+  draw() {
+    // Triangular alpha envelope: fades in then out over life
+    const a = Math.sin(this.life * Math.PI) * 0.22;
+    if (a <= 0.005) return;
+
+    // Radial gradient for soft bloom — replaces the CSS blur filter
+    // and is far cheaper on GPU.
+    const r = this.size;
+    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r);
+    grad.addColorStop(0,   `hsla(${this.hue}, 70%, 88%, ${a})`);
+    grad.addColorStop(0.4, `hsla(${this.hue}, 65%, 70%, ${a * 0.35})`);
+    grad.addColorStop(1,   `hsla(${this.hue}, 60%, 50%, 0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function spawnParticles() {
+  const target = targetParticleCount();
+  particles = [];
+  for (let i = 0; i < target; i++) particles.push(new Particle());
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER LOOP
+// ═══════════════════════════════════════════════════════════════
+function frame(now) {
+  if (!running) return;
+  const dt = lastFrame ? (now - lastFrame) : 16;
+  lastFrame = now;
+
+  // Trail fade — slightly stronger than original for cleaner fog
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.globalCompositeOperation = 'screen';
+
+  Flow.step(dt);
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update(dt);
+    particles[i].draw();
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POINTER HANDLING — mouse + touch
+// ═══════════════════════════════════════════════════════════════
+function setPointer(x, y) {
+  pointer.x = x;
+  pointer.y = y;
+  pointer.active = true;
+  clearTimeout(pointer._to);
+  pointer._to = setTimeout(() => pointer.active = false, 250);
+}
+window.addEventListener('mousemove', e => setPointer(e.clientX, e.clientY));
+window.addEventListener('touchmove', e => {
+  if (e.touches.length) {
+    const t = e.touches[0];
+    setPointer(t.clientX, t.clientY);
+  }
+}, { passive: true });
+window.addEventListener('touchstart', e => {
+  if (e.touches.length) {
+    const t = e.touches[0];
+    setPointer(t.clientX, t.clientY);
+  }
+}, { passive: true });
+
+// ═══════════════════════════════════════════════════════════════
+// AUDIO ENGINE — proper stereo binaural + optional pink noise
+// ═══════════════════════════════════════════════════════════════
+const Audio = {
+  ctx: null,
+  master: null,
+  left: null,   // carrier tone, left channel
+  right: null,  // carrier tone, right channel
+  lGain: null,
+  rGain: null,
+  merger: null,
+  noiseNode: null,
+  noiseGain: null,
+
+  // Carrier frequency: 136.1Hz ("OM") is audible on typical hardware,
+  // thematically resonant, and low enough to feel grounding.
+  CARRIER: 136.1,
+
+  async start(beatHz, withNoise) {
+    if (this.ctx) this.stop();
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === 'suspended') await this.ctx.resume();
+    } catch(e) { console.warn('Audio unavailable', e); return; }
+
+    this.master = this.ctx.createGain();
+    this.master.gain.setValueAtTime(0, this.ctx.currentTime);
+    this.master.connect(this.ctx.destination);
+
+    // —— Binaural carrier tones (only if beatHz > 0) ——
+    if (beatHz > 0) {
+      // Left ear: carrier
+      // Right ear: carrier + beatHz
+      // The brain synthesizes a beat at beatHz when tones are heard separately
+      this.left = this.ctx.createOscillator();
+      this.right = this.ctx.createOscillator();
+      this.left.type = 'sine';
+      this.right.type = 'sine';
+      this.left.frequency.value = this.CARRIER;
+      this.right.frequency.value = this.CARRIER + beatHz;
+
+      this.lGain = this.ctx.createGain();
+      this.rGain = this.ctx.createGain();
+      this.lGain.gain.value = 0.22;
+      this.rGain.gain.value = 0.22;
+
+      this.merger = this.ctx.createChannelMerger(2);
+      this.left.connect(this.lGain);
+      this.right.connect(this.rGain);
+      this.lGain.connect(this.merger, 0, 0);   // left channel
+      this.rGain.connect(this.merger, 0, 1);   // right channel
+      this.merger.connect(this.master);
+
+      this.left.start();
+      this.right.start();
     }
 
-    update() {
-      // 1. Perlin-like Flow (Simulated)
-      // Particles swirl based on their position
-      const angle = (this.x * 0.002) + (this.y * 0.002);
-      this.vx += Math.cos(angle) * 0.02;
-      this.vy += Math.sin(angle) * 0.02;
-
-      // 2. Mouse Interaction (Magnetic Repulsion)
-      if (mouse.active) {
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < 200) {
-          const force = (200 - dist) / 200;
-          const repulsionAngle = Math.atan2(dy, dx);
-          this.vx -= Math.cos(repulsionAngle) * force * 0.5;
-          this.vy -= Math.sin(repulsionAngle) * force * 0.5;
+    // —— Pink noise bed ——
+    if (withNoise) {
+      const bufSize = 2 * this.ctx.sampleRate;
+      const buf = this.ctx.createBuffer(2, bufSize, this.ctx.sampleRate);
+      // Voss-McCartney-ish pink noise approximation
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+        for (let i = 0; i < bufSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+          b6 = white * 0.115926;
         }
       }
-
-      // 3. Apply Velocity
-      this.x += this.vx;
-      this.y += this.vy;
-
-      // 4. Friction (Fluid viscosity)
-      this.vx *= 0.96;
-      this.vy *= 0.96;
-
-      // 5. Life Cycle
-      this.life -= this.decay;
-      if (this.life <= 0) this.init();
-
-      // Wrap screen
-      if (this.x > width + 50) this.x = -50;
-      if (this.x < -50) this.x = width + 50;
-      if (this.y > height + 50) this.y = -50;
-      if (this.y < -50) this.y = height + 50;
+      this.noiseNode = this.ctx.createBufferSource();
+      this.noiseNode.buffer = buf;
+      this.noiseNode.loop = true;
+      this.noiseGain = this.ctx.createGain();
+      this.noiseGain.gain.value = 0.08;
+      this.noiseNode.connect(this.noiseGain);
+      this.noiseGain.connect(this.master);
+      this.noiseNode.start();
     }
 
-    draw() {
-      // Draw as soft light
-      ctx.beginPath();
-      // Opacity is linked to life cycle (fade in/out)
-      let alpha = Math.sin(this.life * Math.PI); 
-      ctx.fillStyle = `rgba(200, 220, 255, ${alpha * 0.15})`;
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
+    // Fade in
+    this.master.gain.linearRampToValueAtTime(0.9, this.ctx.currentTime + 2.5);
+  },
+
+  stop(fadeMs = 1500) {
+    if (!this.ctx) return;
+    const c = this.ctx;
+    const m = this.master;
+    if (m) {
+      const now = c.currentTime;
+      m.gain.cancelScheduledValues(now);
+      m.gain.setValueAtTime(m.gain.value, now);
+      m.gain.linearRampToValueAtTime(0.0001, now + fadeMs / 1000);
     }
+    const nodes = { l: this.left, r: this.right, n: this.noiseNode };
+    setTimeout(() => {
+      try { nodes.l && nodes.l.stop(); } catch(e) {}
+      try { nodes.r && nodes.r.stop(); } catch(e) {}
+      try { nodes.n && nodes.n.stop(); } catch(e) {}
+      try { c.close(); } catch(e) {}
+    }, fadeMs + 200);
+    this.ctx = null;
+    this.master = null;
+    this.left = this.right = this.noiseNode = null;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SESSION LIFECYCLE
+// ═══════════════════════════════════════════════════════════════
+let sessionStart = null;
+let timerInterval = null;
+let sessionEndTimeout = null;
+
+function startSession() {
+  sessionStart = Date.now();
+  persistCfg();
+
+  // Hide start dock
+  document.getElementById('start-dock').classList.add('hidden');
+  document.body.classList.add('scrying');
+
+  // Reveal mirror
+  resize();
+  spawnParticles();
+  running = true;
+  lastFrame = 0;
+  canvas.classList.add('active');
+  document.getElementById('vignette').classList.add('active');
+
+  // Start render loop
+  requestAnimationFrame(frame);
+
+  // Audio
+  if (cfg.beat > 0 || cfg.noise) {
+    Audio.start(cfg.beat, cfg.noise);
   }
 
-  // Populate
-  function createParticles() {
-    particles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push(new Particle());
-    }
+  // Anchor
+  if (cfg.anchor) {
+    document.getElementById('anchor').classList.add('visible');
   }
 
-  function animate() {
-    if (!isRunning) return;
+  // Status line
+  const statusEl = document.getElementById('status');
+  const parts = [];
+  if (cfg.beat > 0) parts.push(`${cfg.beat}Hz binaural`);
+  if (cfg.noise) parts.push('pink noise');
+  if (!parts.length) parts.push('silent');
+  statusEl.textContent = parts.join(' · ');
 
-    // Fade out trail effect
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.fillRect(0, 0, width, height);
+  // Exit control
+  document.getElementById('exit-btn').classList.add('visible');
 
-    // Blending mode for "Ghostly" overlap
-    ctx.globalCompositeOperation = 'screen';
+  // Timer
+  if (cfg.duration > 0) {
+    document.getElementById('timer').classList.add('visible');
+    document.getElementById('exit-btn').classList.remove('visible');
+    tickTimer();
+    timerInterval = setInterval(tickTimer, 500);
+    sessionEndTimeout = setTimeout(endSession, cfg.duration * 1000);
+  }
+}
 
-    particles.forEach(p => {
-      p.update();
-      p.draw();
+function tickTimer() {
+  const elapsed = (Date.now() - sessionStart) / 1000;
+  const remaining = Math.max(0, cfg.duration - elapsed);
+  const m = Math.floor(remaining / 60);
+  const s = Math.floor(remaining % 60);
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  if (remaining < 30) el.classList.add('ending');
+}
+
+function endSession() {
+  if (!running) return;
+  running = false;
+  const elapsedSec = Math.round((Date.now() - sessionStart) / 1000);
+
+  // Clear timers
+  if (timerInterval) clearInterval(timerInterval);
+  if (sessionEndTimeout) clearTimeout(sessionEndTimeout);
+
+  // Fade out
+  canvas.classList.remove('active');
+  document.getElementById('vignette').classList.remove('active');
+  document.getElementById('anchor').classList.remove('visible');
+  document.getElementById('timer').classList.remove('visible', 'ending');
+  document.getElementById('exit-btn').classList.remove('visible');
+  Audio.stop();
+
+  document.body.classList.remove('scrying');
+
+  setTimeout(() => {
+    // If journal enabled AND we actually ran for some time, show journal
+    if (cfg.journal && elapsedSec >= 30) {
+      showJournal(elapsedSec);
+    } else {
+      // Reveal start dock again
+      document.getElementById('start-dock').classList.remove('hidden');
+      refreshPastLink();
+      document.getElementById('status').textContent = 'Scrying Engine · v2.0';
+    }
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// JOURNAL
+// ═══════════════════════════════════════════════════════════════
+function showJournal(elapsedSec) {
+  const durMin = Math.floor(elapsedSec / 60);
+  const durSec = elapsedSec % 60;
+  const when = new Date().toLocaleString();
+  const modeLabel = cfg.beat > 0 ? `${cfg.beat}Hz` : 'silent';
+
+  const j = document.getElementById('journal-content');
+  j.innerHTML = `
+    <h2>RECORD</h2>
+    <div class="j-sub">Post-session impressions</div>
+
+    <div class="journal-meta">
+      <div class="j-meta-item"><div class="k">Duration</div><div class="v">${durMin}:${durSec.toString().padStart(2,'0')}</div></div>
+      <div class="j-meta-item"><div class="k">Audio</div><div class="v">${modeLabel}</div></div>
+      <div class="j-meta-item"><div class="k">Anchor</div><div class="v">${cfg.anchor ? 'on' : 'off'}</div></div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-q">What did you see?</div>
+      <textarea id="j-visual" placeholder="Forms, movements, faces, patterns — literal or suggested..."></textarea>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-q">What did you feel?</div>
+      <textarea id="j-felt" placeholder="Emotional, somatic, intuitive — including the sense of anything present..."></textarea>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-q">Any impression or message?</div>
+      <textarea id="j-impression" placeholder="Names, words, images that surfaced. Leave blank if nothing came..."></textarea>
+    </div>
+
+    <div class="journal-actions">
+      <button class="btn" id="j-skip">Discard</button>
+      <button class="btn" id="j-save">Save Entry</button>
+    </div>
+  `;
+  document.getElementById('journal-backdrop').classList.add('show');
+
+  document.getElementById('j-skip').onclick = closeJournal;
+  document.getElementById('j-save').onclick = () => {
+    const entry = {
+      t: new Date().toISOString(),
+      duration_sec: elapsedSec,
+      beat: cfg.beat,
+      anchor: cfg.anchor,
+      noise: cfg.noise,
+      visual: document.getElementById('j-visual').value.trim(),
+      felt: document.getElementById('j-felt').value.trim(),
+      impression: document.getElementById('j-impression').value.trim()
+    };
+    saveEntry(entry);
+    closeJournal();
+  };
+}
+
+function closeJournal() {
+  document.getElementById('journal-backdrop').classList.remove('show');
+  document.getElementById('start-dock').classList.remove('hidden');
+  refreshPastLink();
+  document.getElementById('status').textContent = 'Scrying Engine · v2.0';
+}
+
+function saveEntry(entry) {
+  try {
+    const key = 'visus.entries';
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    existing.unshift(entry);
+    // Cap at 100 entries
+    localStorage.setItem(key, JSON.stringify(existing.slice(0, 100)));
+  } catch(e) { console.warn('Save failed', e); }
+}
+
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem('visus.entries') || '[]'); }
+  catch(e) { return []; }
+}
+
+function refreshPastLink() {
+  const entries = getEntries();
+  const link = document.getElementById('past-link');
+  if (entries.length > 0) {
+    link.style.display = 'block';
+    link.textContent = `View past entries (${entries.length})`;
+  } else {
+    link.style.display = 'none';
+  }
+}
+
+function showEntries() {
+  const entries = getEntries();
+  if (!entries.length) return;
+
+  const j = document.getElementById('journal-content');
+  j.innerHTML = `
+    <h2>ARCHIVE</h2>
+    <div class="j-sub">${entries.length} entries</div>
+    <div class="entries-list">
+      ${entries.map(e => `
+        <div class="entry">
+          <div class="entry-head">${new Date(e.t).toLocaleString()} · ${Math.floor(e.duration_sec/60)}:${(e.duration_sec%60).toString().padStart(2,'0')} · ${e.beat > 0 ? e.beat+'Hz' : 'silent'}</div>
+          <div class="entry-text">${e.visual ? 'SAW: ' + escapeHtml(e.visual) + '\n' : ''}${e.felt ? 'FELT: ' + escapeHtml(e.felt) + '\n' : ''}${e.impression ? 'IMPRESSION: ' + escapeHtml(e.impression) : ''}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="journal-actions">
+      <button class="btn" id="e-export">Export JSON</button>
+      <button class="btn" id="e-close">Close</button>
+    </div>
+  `;
+  document.getElementById('journal-backdrop').classList.add('show');
+
+  document.getElementById('e-close').onclick = () => {
+    document.getElementById('journal-backdrop').classList.remove('show');
+  };
+  document.getElementById('e-export').onclick = exportEntries;
+}
+
+function exportEntries() {
+  const entries = getEntries();
+  if (!entries.length) return;
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `visus_entries_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG UI WIRING
+// ═══════════════════════════════════════════════════════════════
+function selectPill(group, val) {
+  document.querySelectorAll(`[data-group="${group}"] .pill`).forEach(p => {
+    p.classList.toggle('selected', parseFloat(p.dataset.val) === parseFloat(val));
+  });
+  if (group === 'beat') {
+    document.getElementById('hp-note').classList.toggle('visible', parseFloat(val) > 0);
+  }
+}
+
+function syncConfigUI() {
+  selectPill('duration', cfg.duration);
+  selectPill('beat', cfg.beat);
+  document.getElementById('tog-anchor').classList.toggle('on', cfg.anchor);
+  document.getElementById('tog-noise').classList.toggle('on', cfg.noise);
+  document.getElementById('tog-journal').classList.toggle('on', cfg.journal);
+}
+
+function wireUp() {
+  syncConfigUI();
+  refreshPastLink();
+
+  // Pills
+  document.querySelectorAll('[data-group] .pill').forEach(p => {
+    p.addEventListener('click', () => {
+      const group = p.parentElement.dataset.group;
+      const val = parseFloat(p.dataset.val);
+      cfg[group] = val;
+      selectPill(group, val);
     });
+  });
 
-    requestAnimationFrame(animate);
-  }
+  // Toggles
+  const toggles = {
+    'tog-anchor': 'anchor',
+    'tog-noise': 'noise',
+    'tog-journal': 'journal'
+  };
+  Object.entries(toggles).forEach(([id, key]) => {
+    document.getElementById(id).addEventListener('click', (e) => {
+      cfg[key] = !cfg[key];
+      e.currentTarget.classList.toggle('on', cfg[key]);
+    });
+  });
 
-  // --- AUDIO DRONE (The "Hum") ---
-  function startAudio() {
-    if (!window.AudioContext) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    osc = audioCtx.createOscillator();
-    gainNode = audioCtx.createGain();
+  // Init
+  document.getElementById('btn-init').addEventListener('click', startSession);
+  document.getElementById('exit-btn').addEventListener('click', endSession);
+  document.getElementById('past-link').addEventListener('click', showEntries);
 
-    // 40Hz is deep Gamma/Beta threshold (Focus/Trance)
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(40, audioCtx.currentTime);
-    
-    // Very low volume background hum
-    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 2); // Fade in
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    if (e.key === 'Escape') {
+      if (document.getElementById('journal-backdrop').classList.contains('show')) {
+        // Don't dismiss journal via Esc — it's intentional
+        return;
+      }
+      if (running) endSession();
+    } else if (e.key === ' ' && !running && !document.getElementById('journal-backdrop').classList.contains('show')) {
+      e.preventDefault();
+      startSession();
+    }
+  });
 
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    osc.start();
-  }
+  resize();
+}
 
-  // --- SYSTEM INIT ---
-  function initSystem() {
-    if (isRunning) return;
-    
-    // Hide Button
-    document.getElementById('initBtn').style.display = 'none';
-    document.getElementById('scryCanvas').classList.add('active');
-    
-    isRunning = true;
-    createParticles();
-    animate();
-    startAudio();
-  }
-
+document.addEventListener('DOMContentLoaded', wireUp);
 </script>
 </body>
 </html>
